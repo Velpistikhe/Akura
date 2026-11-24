@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const validate_middleware_js_1 = require("../../middlewares/validate.middleware.js");
+const asyncHandler_js_1 = require("../../utils/asyncHandler.js");
+const service_controller_js_1 = require("./service.controller.js");
+const service_schemas_js_1 = require("./service.schemas.js");
+const router = (0, express_1.Router)();
+router.get('/', (0, validate_middleware_js_1.validate)('query', service_schemas_js_1.listServicesSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.list));
+router.get('/:serviceId/history', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, validate_middleware_js_1.validate)('query', service_schemas_js_1.serviceHistorySchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.history));
+router.get('/:serviceId', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.get));
+router.post('/', (0, validate_middleware_js_1.validate)('body', service_schemas_js_1.createServiceSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.create));
+router.patch('/:serviceId', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, validate_middleware_js_1.validate)('body', service_schemas_js_1.updateServiceSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.update));
+router.post('/:serviceId/inspection/scopes', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, validate_middleware_js_1.validate)('body', service_schemas_js_1.createInspectionScopeSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.createInspectionScope));
+router.post('/:serviceId/maintenance/scopes', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, validate_middleware_js_1.validate)('body', service_schemas_js_1.createMaintenanceScopeSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.createMaintenanceScope));
+router.delete('/:serviceId/maintenance/scopes/:scopeId', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.maintenanceScopeIdSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.deleteMaintenanceScope));
+router.delete('/:serviceId/inspection/scopes/:inspectionScopeId', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.inspectionScopeIdSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.deleteInspectionScope));
+router.delete('/:serviceId', (0, validate_middleware_js_1.validate)('params', service_schemas_js_1.serviceIdSchema), (0, validate_middleware_js_1.validate)('body', service_schemas_js_1.deactivateServiceSchema), (0, asyncHandler_js_1.asyncHandler)(service_controller_js_1.serviceController.delete));
+exports.default = router;
+//# sourceMappingURL=service.routes.js.map

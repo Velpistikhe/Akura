@@ -1,0 +1,1 @@
+import{t as e}from"./virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js-C4whtyL8.js";export{e as default};

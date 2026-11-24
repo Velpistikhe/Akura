@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sanitizeUser = void 0;
+const sanitizeUser = (user) => ({
+    id: user.id,
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    telp: user.telp,
+    role: user.role,
+    section: user.section,
+    officeBranchId: user.officeBranchId,
+    branch: user.officeBranchName ?? null,
+    isActive: user.isActive,
+    version: user.version,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+});
+exports.sanitizeUser = sanitizeUser;
+//# sourceMappingURL=userMapper.js.map

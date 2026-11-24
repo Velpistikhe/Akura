@@ -1,0 +1,23 @@
+export declare const env: {
+    PORT: number;
+    NODE_ENV: "development" | "production" | "test";
+    DEV_ALLOWED_REMOTE_HOSTS: string;
+    AUTH_SERVICE_GATEWAY_SECRET: string;
+    APP_MANAGER_SERVICE_GATEWAY_SECRET: string;
+    MARKETING_SERVICE_GATEWAY_SECRET: string;
+    CORS_ORIGIN: string;
+    AUTH_SERVICE_URL: string;
+    AUTH_JWKS_URL: string;
+    JWT_ISSUER: string;
+    JWT_AUDIENCE: string;
+    APP_MANAGER_SERVICE_URL: string;
+    MARKETING_SERVICE_URL: string;
+    RATE_LIMIT_WINDOW_MS: number;
+    RATE_LIMIT_MAX_REQUESTS: number;
+    AUTH_RATE_LIMIT_WINDOW_MS: number;
+    AUTH_RATE_LIMIT_MAX_REQUESTS: number;
+    FINANCE_SERVICE_URL?: string | undefined;
+    FINANCE_SERVICE_GATEWAY_SECRET?: string | undefined;
+    FIELDSERVICE_SERVICE_URL?: string | undefined;
+    FIELDSERVICE_SERVICE_GATEWAY_SECRET?: string | undefined;
+};

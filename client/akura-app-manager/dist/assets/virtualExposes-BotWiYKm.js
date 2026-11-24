@@ -1,0 +1,1 @@
+import{t as e}from"./virtual_mf-exposes___mfe_internal__akura_app_manager__remoteEntry_js-NVNmit6U.js";export{e as default};

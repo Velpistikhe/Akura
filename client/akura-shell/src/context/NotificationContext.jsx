@@ -1,0 +1,126 @@
+import { createContext, useContext, useCallback } from 'react'
+import {
+  notification,
+  message,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  WarningOutlined,
+  InfoCircleOutlined,
+  BellOutlined,
+} from '../components/global'
+
+// ─── Global notification config ──────────────────────────────────────────────
+notification.config({
+  placement: 'topRight',
+  duration: 4,
+  maxCount: 5,
+})
+
+message.config({
+  duration: 3,
+  maxCount: 3,
+})
+
+// ─── Icon map ─────────────────────────────────────────────────────────────────
+const ICONS = {
+  success: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+  error:   <CloseCircleOutlined style={{ color: '#e02020' }} />,
+  warning: <WarningOutlined     style={{ color: '#faad14' }} />,
+  info:    <InfoCircleOutlined  style={{ color: '#1890ff' }} />,
+  default: <BellOutlined        style={{ color: 'var(--text-primary)' }} />,
+}
+
+// ─── Context ──────────────────────────────────────────────────────────────────
+const NotificationContext = createContext(null)
+
+export function NotificationProvider({ children }) {
+  const [api, contextHolder] = notification.useNotification()
+  const [msgApi, msgContextHolder] = message.useMessage()
+
+  /**
+   * Show a panel notification (top right)
+   * @param {'success'|'error'|'warning'|'info'} type
+   * @param {string} title     — notification title
+   * @param {string} desc      — description (optional)
+   * @param {object} options   — override notification options
+   */
+  const notify = useCallback(
+    (type, title, desc, options = {}) => {
+      api.open({
+        type,
+        // antd v6: 'message' → 'title'
+        title: (
+          <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>
+            {title}
+          </span>
+        ),
+        description: desc ? (
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{desc}</span>
+        ) : undefined,
+        icon: ICONS[type] || ICONS.default,
+        style: {
+          borderRadius: 14,
+          background: 'var(--surface)',
+          boxShadow: '0 8px 32px rgba(26, 46, 94, 0.15)',
+          border: '1px solid var(--border)',
+        },
+        ...options,
+      })
+    },
+    [api]
+  )
+
+  /**
+   * Show a short toast message (top center)
+   */
+  const toast = useCallback(
+    (type, content, duration) => {
+      msgApi[type]?.(content, duration)
+    },
+    [msgApi]
+  )
+
+  // ─── Shorthand API ───────────────────────────────────────────────────────────
+  const notifier = {
+    /** Panel notifications */
+    success: (title, desc, opts) => notify('success', title, desc, opts),
+    error:   (title, desc, opts) => notify('error',   title, desc, opts),
+    warning: (title, desc, opts) => notify('warning', title, desc, opts),
+    info:    (title, desc, opts) => notify('info',    title, desc, opts),
+    open:    (opts)              => api.open(opts),
+    destroy: ()                  => api.destroy(),
+
+    /** Short toast messages */
+    toast: {
+      success: (msg, dur) => toast('success', msg, dur),
+      error:   (msg, dur) => toast('error',   msg, dur),
+      warning: (msg, dur) => toast('warning', msg, dur),
+      info:    (msg, dur) => toast('info',    msg, dur),
+      loading: (msg, dur) => toast('loading', msg, dur),
+    },
+  }
+
+  return (
+    <NotificationContext.Provider value={notifier}>
+      {contextHolder}
+      {msgContextHolder}
+      {children}
+    </NotificationContext.Provider>
+  )
+}
+
+/**
+ * useNotification — hook for accessing the notifier from any component
+ *
+ * Example:
+ *   const notify = useNotification()
+ *   notify.success('Success!', 'Data has been saved.')
+ *   notify.toast.error('Unable to load data')
+ */
+export function useNotification() {
+  const ctx = useContext(NotificationContext)
+  if (!ctx) throw new Error('useNotification must be used inside NotificationProvider')
+  return ctx
+}
+
+export default NotificationContext

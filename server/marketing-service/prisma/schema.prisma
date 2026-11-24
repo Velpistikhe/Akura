@@ -1,0 +1,589 @@
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum StaffTitle {
+  mr
+  mrs
+
+  @@map("staff_title")
+}
+
+enum CompanyType {
+  PT
+  CV
+  FIRMA
+  KOPERASI
+  PERORANGAN
+
+  @@map("company_type")
+}
+
+model Company {
+  id              String            @id @default(uuid()) @db.Uuid
+  officeBranchId  String            @map("office_branch_id") @db.Uuid
+  name            String
+  normalizeName   String            @map("normalize_name")
+  npwp            String
+  type            CompanyType
+  address         String
+  isSisterCompany Boolean           @default(false) @map("is_sister_company")
+  revoked         Boolean           @default(false)
+  version         Int               @default(0)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  staffs          CompanyStaff[]
+  contracts       CompanyContract[]
+  history         CompanyHistory[]
+
+  createdById String? @map("created_by_id") @db.Uuid
+  updatedById String? @map("updated_by_id") @db.Uuid
+
+  @@unique([officeBranchId, normalizeName])
+  @@index([revoked])
+  @@map("companies")
+}
+
+model CompanyHistory {
+  id            String   @id @default(uuid()) @db.Uuid
+  companyId     String   @map("company_id") @db.Uuid
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  version       Int
+  action        String
+  snapshot      Json
+  createdById   String   @map("created_by_id") @db.Uuid
+  createdByName String   @map("created_by_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([companyId, version])
+  @@map("company_histories")
+}
+
+model CompanyStaff {
+  history       CompanyStaffHistory[]
+  quotations    Quotation[]
+  id            String                @id @default(uuid()) @db.Uuid
+  companyId     String                @map("company_id") @db.Uuid
+  company       Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name          String
+  normalizeName String                @map("normalize_name")
+  title         StaffTitle
+  telp          String?
+  email         String?
+  revoked       Boolean               @default(false)
+  version       Int                   @default(0)
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+  createdById   String?               @map("created_by_id") @db.Uuid
+  updatedById   String?               @map("updated_by_id") @db.Uuid
+
+  @@index([companyId])
+  @@index([revoked])
+  @@map("company_staffs")
+}
+
+model CompanyStaffHistory {
+  id             String       @id @default(uuid()) @db.Uuid
+  companyStaffId String       @map("company_staff_id") @db.Uuid
+  companyStaff   CompanyStaff @relation(fields: [companyStaffId], references: [id], onDelete: Restrict)
+  version        Int
+  action         String
+  snapshot       Json
+  createdById    String       @map("created_by_id") @db.Uuid
+  createdByName  String       @map("created_by_name")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([companyStaffId, version])
+  @@map("company_staff_histories")
+}
+
+enum ServiceScopeType {
+  INSPECTION
+  MAINTENANCE
+
+  @@map("service_scope_type")
+}
+
+enum ServiceType {
+  TUBULAR
+  OCTG
+  OTHER
+
+  @@map("service_type")
+}
+
+model Service {
+  id                String             @id @default(uuid()) @db.Uuid
+  officeBranchId    String             @map("office_branch_id") @db.Uuid
+  name              String
+  activeKey         String?            @map("active_key")
+  type              ServiceType
+  hasMaintenance    Boolean            @default(false) @map("has_maintenance")
+  isActive          Boolean            @default(true) @map("is_active")
+  version           Int                @default(0)
+  createdById       String             @map("created_by_id") @db.Uuid
+  createdByName     String             @map("created_by_name")
+  updatedById       String?            @map("updated_by_id") @db.Uuid
+  updatedByName     String?            @map("updated_by_name")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  scopes            ServiceScope[]     @relation("ServiceScopes")
+  itemCatalog       Item[]
+
+  @@unique([officeBranchId, activeKey])
+  @@index([officeBranchId])
+  @@map("services")
+}
+
+model ServiceScope {
+  id        String          @id @default(uuid()) @db.Uuid
+  serviceId String?         @map("service_id") @db.Uuid
+  itemId    String?         @map("item_id") @db.Uuid
+  service   Service?        @relation("ServiceScopes", fields: [serviceId], references: [id], onDelete: Cascade)
+  item      Item?           @relation("ItemScopes", fields: [itemId], references: [id], onDelete: Cascade)
+  type      ServiceScopeType
+  scope     String
+  revoked   Boolean         @default(false)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@unique([serviceId, type, scope])
+  @@unique([itemId, type, scope])
+  @@index([serviceId])
+  @@index([itemId])
+  @@index([revoked])
+  @@map("service_scopes")
+}
+
+model Item {
+  // An item with a service cannot own scopes; this is enforced by the API schema and service_id/item_id database check.
+  // An item without a service may own inspection and maintenance scopes.
+  // Normalized active reference key; null releases the name after soft deletion.
+  activeKey         String?            @map("active_key")
+  version           Int                @default(0)
+  id                String             @id @default(uuid()) @db.Uuid
+  officeBranchId    String             @map("office_branch_id") @db.Uuid
+  name              String
+  uom               String
+  serviceId         String?            @map("service_id") @db.Uuid
+  service           Service?           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  scopes            ServiceScope[]     @relation("ItemScopes")
+  isActive          Boolean            @default(true) @map("is_active")
+  createdById       String             @map("created_by_id") @db.Uuid
+  createdByName     String             @map("created_by_name")
+  updatedById       String?            @map("updated_by_id") @db.Uuid
+  updatedByName     String?            @map("updated_by_name")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  sizes             ItemSize[]
+
+  @@unique([serviceId, activeKey])
+  @@index([officeBranchId])
+  @@map("items")
+}
+
+model ItemSize {
+  // Normalized active reference key; null releases the name after soft deletion.
+  activeKey      String?                @map("active_key")
+  version        Int                    @default(0)
+  quotationItems QuotationItem[]
+  id             String                 @id @default(uuid()) @db.Uuid
+  itemId         String                 @map("item_id") @db.Uuid
+  item           Item                   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  size           String?
+  isActive       Boolean                @default(true) @map("is_active")
+  createdById    String                 @map("created_by_id") @db.Uuid
+  createdByName  String                 @map("created_by_name")
+  updatedById    String?                @map("updated_by_id") @db.Uuid
+  updatedByName  String?                @map("updated_by_name")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+  price          ItemPrice?
+  contractPrices CompanyContractPrice[]
+
+  effectiveFrom  DateTime  @default(now()) @map("effective_from")
+  effectiveUntil DateTime? @map("effective_until")
+
+  @@unique([itemId, size, effectiveFrom])
+  @@unique([itemId, activeKey])
+  @@index([itemId])
+  @@index([isActive])
+  @@map("item_sizes")
+}
+
+model ItemPrice {
+  version                       Int       @default(0)
+  id                            String    @id @default(uuid()) @db.Uuid
+  itemSizeId                    String    @unique @map("item_size_id") @db.Uuid
+  itemSize                      ItemSize  @relation(fields: [itemSizeId], references: [id], onDelete: Cascade)
+  priceServicePrimary           Decimal   @map("price_service_primary") @db.Decimal(18, 2)
+  priceServiceSisterCompany     Decimal?  @map("price_service_sister_company") @db.Decimal(18, 2)
+  priceMaintenancePrimary       Decimal?  @map("price_maintenance_primary") @db.Decimal(18, 2)
+  priceMaintenanceSisterCompany Decimal?  @map("price_maintenance_sister_company") @db.Decimal(18, 2)
+  effectiveFrom                 DateTime  @default(now()) @map("effective_from")
+  effectiveUntil                DateTime? @map("effective_until")
+  isActive                      Boolean   @default(true) @map("is_active")
+  createdById                   String    @map("created_by_id") @db.Uuid
+  createdByName                 String    @map("created_by_name")
+  updatedById                   String?   @map("updated_by_id") @db.Uuid
+  updatedByName                 String?   @map("updated_by_name")
+  createdAt                     DateTime  @default(now()) @map("created_at")
+  updatedAt                     DateTime  @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([effectiveFrom, effectiveUntil])
+  @@map("item_prices")
+}
+
+enum CompanyContractStatus {
+  DRAFT
+  SUBMITTED
+  REJECTED
+  APPROVED
+  REVISED
+  TERMINATED
+
+  @@map("company_contract_status")
+}
+
+model CompanyContract {
+  status         CompanyContractStatus    @default(DRAFT)
+  isDeleted      Boolean                  @default(false) @map("is_deleted")
+  id             String                   @id @default(uuid()) @db.Uuid
+  companyId      String                   @map("company_id") @db.Uuid
+  company        Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contractNumber String                   @map("contract_number")
+  contractDate   DateTime                 @map("contract_date") @db.Date
+  effectiveFrom  DateTime                 @map("effective_from") @db.Date
+  effectiveUntil DateTime                 @map("effective_until") @db.Date
+  version        Int                      @default(0)
+  createdById    String                   @map("created_by_id") @db.Uuid
+  updatedById    String?                  @map("updated_by_id") @db.Uuid
+  companySnapshot Json?                   @map("company_snapshot")
+  revisionOfId   String?                  @map("revision_of_id") @db.Uuid
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  updatedAt      DateTime                 @updatedAt @map("updated_at")
+  prices         CompanyContractPrice[]
+  history        CompanyContractHistory[]
+
+  @@index([companyId, status, effectiveFrom, effectiveUntil])
+  @@index([revisionOfId])
+  @@map("company_contracts")
+}
+
+model CompanyContractHistory {
+  id                String          @id @default(uuid()) @db.Uuid
+  companyContractId String          @map("company_contract_id") @db.Uuid
+  companyContract   CompanyContract @relation(fields: [companyContractId], references: [id], onDelete: Restrict)
+  version           Int
+  action            String
+  snapshot          Json
+  createdById       String          @map("created_by_id") @db.Uuid
+  createdByName     String          @map("created_by_name")
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  @@unique([companyContractId, version])
+  @@map("company_contract_histories")
+}
+
+model CompanyContractPrice {
+  /// Catalog identity captured when this contract price is created; never refreshed from live catalog.
+  catalogSnapshot  Json            @map("catalog_snapshot")
+  version          Int             @default(0)
+  id               String          @id @default(uuid()) @db.Uuid
+  contractId       String          @map("contract_id") @db.Uuid
+  contract         CompanyContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  itemSizeId       String          @map("item_size_id") @db.Uuid
+  itemSize         ItemSize        @relation(fields: [itemSizeId], references: [id], onDelete: Cascade)
+  priceService     Decimal         @map("price_service") @db.Decimal(18, 2)
+  priceMaintenance Decimal?        @map("price_maintenance") @db.Decimal(18, 2)
+  effectiveFrom    DateTime        @default(now()) @map("effective_from")
+  effectiveUntil   DateTime?       @map("effective_until")
+  isActive         Boolean         @default(true) @map("is_active")
+  createdById      String          @map("created_by_id") @db.Uuid
+  createdByName    String          @map("created_by_name")
+  updatedById      String?         @map("updated_by_id") @db.Uuid
+  updatedByName    String?         @map("updated_by_name")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@unique([contractId, itemSizeId])
+  @@index([contractId])
+  @@index([itemSizeId])
+  @@index([isActive])
+  @@index([effectiveFrom, effectiveUntil])
+  @@map("company_contract_prices")
+}
+
+model CatalogAuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  officeBranchId String   @map("office_branch_id") @db.Uuid
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id") @db.Uuid
+  version        Int
+  action         String
+  before         Json?
+  after          Json
+  createdById    String   @map("created_by_id") @db.Uuid
+  createdByName  String   @map("created_by_name")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([entityType, entityId, version])
+  @@index([officeBranchId, entityType, entityId, createdAt])
+  @@map("catalog_audit_logs")
+}
+
+enum InquiryMethod {
+  EMAIL
+  WHATSAPP
+  VERBAL
+  JOB_ORDER_REQUEST
+
+  @@map("inquiry_method")
+}
+
+enum QuotationStatus {
+  CREATED
+  SUBMITTED
+  REJECTED
+  APPROVED
+  REVISED
+  CONFIRMED
+  ON_PROGRESS
+  WORK_ORDER_COMPLETE
+  COMPLETE
+
+  @@map("quotation_status")
+}
+
+model QuotationSequence {
+  officeBranchId String   @map("office_branch_id") @db.Uuid
+  year           Int
+  lastNumber     Int      @default(0) @map("last_number")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@id([officeBranchId, year])
+  @@map("quotation_sequences")
+}
+
+model Quotation {
+  id                  String             @id @default(uuid()) @db.Uuid
+  officeBranchId      String             @map("office_branch_id") @db.Uuid
+  no                  Int?
+  numberYear          Int?               @map("number_year")
+  previousQuotationId String?            @unique @map("previous_quotation_id") @db.Uuid
+  previousQuotation   Quotation?         @relation("QuotationRevisions", fields: [previousQuotationId], references: [id], onDelete: Restrict)
+  nextQuotation       Quotation?         @relation("QuotationRevisions")
+  date                DateTime?          @db.Date
+  jobStart            String             @map("job_start")
+  inquiryMethod       InquiryMethod      @map("inquiry_method")
+  inquiryDate         DateTime           @map("inquiry_date") @db.Date
+  subject             String             @db.VarChar(255)
+  termOfPayment       String             @map("term_of_payment") @db.VarChar(255)
+  validity            String             @db.VarChar(255)
+  tax                 Decimal            @db.Decimal(5, 2)
+  taxSourceId         String             @map("tax_source_id") @db.Uuid
+  supplyAkura         String             @map("supply_akura") @db.Text
+  supplyCustomer      String             @map("supply_customer") @db.Text
+  location            String             @db.VarChar(255)
+  accomplished        String             @db.Text
+  deliveryReports     String             @map("delivery_reports") @db.Text
+  deliveryInvoice     String             @map("delivery_invoice") @db.Text
+  staffId             String             @map("staff_id") @db.Uuid
+  staff               CompanyStaff       @relation(fields: [staffId], references: [id], onDelete: Restrict)
+  /// Company staff name captured independently of later staff edits.
+  customerSnapshot    String             @map("customer_snapshot")
+  companySnapshot     Json               @map("company_snapshot")
+  status              QuotationStatus    @default(CREATED)
+  pdfDocument         QuotationPdf?
+  subTotal            Decimal            @default(0) @map("sub_total") @db.Decimal(18, 2)
+  taxAmount           Decimal            @default(0) @map("tax_amount") @db.Decimal(18, 2)
+  total               Decimal            @default(0) @db.Decimal(18, 2)
+  /// Concurrency token for the entire quotation, including all item mutations.
+  version             Int                @default(0)
+  /// Increments only when an approved quotation is replaced by a new draft.
+  revision            Int                @default(0)
+  isActive            Boolean            @default(true) @map("is_active")
+  /// True while the quotation backs a live Work Order in Field Service.
+  hasWorkOrder        Boolean            @default(false) @map("has_work_order")
+  /// Field Service Work Order id. Remote reference, not a foreign key.
+  workOrderId         String?            @map("work_order_id") @db.Uuid
+  /// Work Order identity captured when the work order was published.
+  workOrderSnapshot   Json?              @map("work_order_snapshot") @db.JsonB
+  /// contract-based Work Order (Flow 3); null for a quotation that precedes
+  createdById         String             @map("created_by_id") @db.Uuid
+  createdByName       String             @map("created_by_name")
+  updatedById         String?            @map("updated_by_id") @db.Uuid
+  updatedByName       String?            @map("updated_by_name")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+  items               QuotationItem[]
+  history             QuotationHistory[]
+  snapshots           QuotationSnapshot[]
+
+  @@unique([officeBranchId, numberYear, no, revision])
+  @@index([officeBranchId, isActive, createdAt])
+  @@index([officeBranchId, workOrderId])
+  @@index([staffId])
+  @@map("quotations")
+}
+
+model QuotationPdf {
+  id             String    @id @default(uuid()) @db.Uuid
+  quotationId    String    @unique @map("quotation_id") @db.Uuid
+  quotation      Quotation @relation(fields: [quotationId], references: [id], onDelete: Restrict)
+  bucket         String
+  key            String
+  fileName       String    @map("file_name")
+  contentType    String    @map("content_type")
+  size           Int
+  sha256         String    @db.VarChar(64)
+  revision       Int
+  version        Int
+  approvedAt     DateTime  @map("approved_at")
+  approvedById   String    @map("approved_by_id") @db.Uuid
+  approvedByName String    @map("approved_by_name")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([bucket, key])
+  @@unique([quotationId, version])
+  @@index([quotationId, revision])
+  @@map("quotation_pdfs")
+}
+
+model QuotationItem {
+  priceSelection      Json?       @map("price_selection")
+  id                  String      @id @default(uuid()) @db.Uuid
+  quotationId         String      @map("quotation_id") @db.Uuid
+  quotation           Quotation   @relation(fields: [quotationId], references: [id], onDelete: Restrict)
+  itemSizeId          String      @map("item_size_id") @db.Uuid
+  itemSize            ItemSize    @relation(fields: [itemSizeId], references: [id], onDelete: Restrict)
+  position            Int
+  serviceName         String      @map("service_name")
+  serviceType         ServiceType @map("service_type")
+  itemName            String      @map("item_name")
+  size                String?
+  note                String?     @db.Text
+  quantityInspection  Decimal     @map("quantity") @db.Decimal(18, 3)
+  quantityMaintenance Decimal     @default(0) @map("quantity_maintenance") @db.Decimal(18, 3)
+  priceInspection     Decimal     @map("unit_price") @db.Decimal(18, 2)
+  priceMaintenance    Decimal?    @map("price_maintenance") @db.Decimal(18, 2)
+  /// Discount percentage (0-100) applied to both unit prices before the line total is calculated.
+  discount            Decimal     @default(0) @db.Decimal(18, 2)
+  subTotal            Decimal     @map("sub_total") @db.Decimal(18, 2)
+  isActive            Boolean     @default(true) @map("is_active")
+  /// Optimistic concurrency token for item mutations.
+  version             Int         @default(0)
+  createdById         String      @map("created_by_id") @db.Uuid
+  createdByName       String      @default("System Migration") @map("created_by_name")
+  updatedById         String?     @map("updated_by_id") @db.Uuid
+  updatedByName       String?     @map("updated_by_name")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  @@index([quotationId, isActive, position])
+  @@index([itemSizeId])
+  @@map("quotation_items")
+}
+
+model QuotationHistory {
+  id            String    @id @default(uuid()) @db.Uuid
+  quotationId   String    @map("quotation_id") @db.Uuid
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Restrict)
+  version       Int
+  action        String    @db.VarChar(20)
+  /// Field-level changes. Each entry contains field, label, before and after.
+  changes       Json      @default("[]")
+  createdById   String    @map("created_by_id") @db.Uuid
+  createdByName String    @map("created_by_name")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@unique([quotationId, version])
+  @@map("quotation_histories")
+}
+
+model QuotationSnapshot {
+  id            String    @id @default(uuid()) @db.Uuid
+  quotationId   String    @map("quotation_id") @db.Uuid
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Restrict)
+  version       Int
+  action        String    @db.VarChar(20)
+  snapshot      Json
+  createdById   String    @map("created_by_id") @db.Uuid
+  createdByName String    @map("created_by_name")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@unique([quotationId, version])
+  @@index([quotationId, createdAt])
+  @@map("quotation_snapshots")
+}
+
+model TaxCache {
+  id              String    @id @db.Uuid
+  officeBranchId  String    @map("office_branch_id") @db.Uuid
+  percentage      Decimal   @db.Decimal(5, 2)
+  effectiveFrom   DateTime  @map("effective_from") @db.Date
+  effectiveUntil  DateTime? @map("effective_until") @db.Date
+  sourceUpdatedAt DateTime  @map("source_updated_at")
+
+  @@index([officeBranchId, effectiveFrom])
+  @@map("tax_cache")
+}
+
+model TaxSyncState {
+  id            String    @id
+  lastSuccessAt DateTime? @map("last_success_at")
+
+  @@map("tax_sync_state")
+}
+
+model TaxCacheRevision {
+  officeBranchId String @id @db.Uuid
+  version        Int
+  eventId        String @db.Uuid
+
+  @@map("tax_cache_revisions")
+}
+
+/// Audit trail for every write in this service.
+///
+/// The tax snapshot itself is recorded in `TaxEvent`. This table records
+/// who changed the data, which the event payload does not carry. A single
+/// generic table keeps the audit trail uniform across the whole platform, so a
+/// new module is audited without a schema migration.
+///
+/// The rows are append-only: there is no update or delete path in the
+/// application.
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  module         String   @db.VarChar(50)
+  entityType     String   @map("entity_type") @db.VarChar(50)
+  entityId       String   @map("entity_id") @db.Uuid
+  /// The version of the entity state this entry describes.
+  ///
+  /// Entities that carry their own version column record that number. The
+  /// entities without one record the timestamp of the change, so every write
+  /// still produces exactly one entry. A BigInt holds both.
+  version        BigInt
+  action         String   @db.VarChar(20)
+  before         Json?    @db.JsonB
+  after          Json     @db.JsonB
+  officeBranchId String?  @map("office_branch_id") @db.Uuid
+  createdById    String   @map("created_by_id") @db.Uuid
+  createdByName  String   @map("created_by_name")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([entityType, entityId, version])
+  @@index([module, entityType, entityId, createdAt])
+  @@index([officeBranchId, createdAt])
+  @@map("audit_logs")
+}

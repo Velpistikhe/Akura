@@ -1,0 +1,190 @@
+import { forwardRef } from 'react'
+import './ModalMotion.css'
+import {
+  Alert as AntAlert,
+  Avatar as AntAvatar,
+  Badge as AntBadge,
+  Breadcrumb as AntBreadcrumb,
+  Button as AntButton,
+  Card as AntCard,
+  Checkbox as AntCheckbox,
+  Col as AntCol,
+  ConfigProvider as AntConfigProvider,
+  Divider as AntDivider,
+  Dropdown as AntDropdown,
+  Drawer as AntDrawer,
+  Empty as AntEmpty,
+  Form as AntForm,
+  Input as AntInput,
+  InputNumber as AntInputNumber,
+  Layout as AntLayout,
+  Menu as AntMenu,
+  Modal as AntModal,
+  Progress as AntProgress,
+  Row as AntRow,
+  Spin as AntSpin,
+  Statistic as AntStatistic,
+  Tag as AntTag,
+  Tooltip as AntTooltip,
+} from 'antd'
+
+function createAdapter(Component, displayName, mapProps = (props) => props) {
+  const Adapter = forwardRef((props, ref) => <Component ref={ref} {...mapProps(props)} />)
+  Adapter.displayName = displayName
+  return Adapter
+}
+
+function disableAutocomplete(props) {
+  return { ...props, autoComplete: props.autoComplete ?? 'off' }
+}
+
+function nonNegativeInputEvents({ onKeyDown, onBeforeInput, onPaste }) {
+  return {
+    onKeyDown: (event) => {
+      if (['ArrowUp', 'ArrowDown', '-'].includes(event.key)) event.preventDefault()
+      onKeyDown?.(event)
+    },
+    onBeforeInput: (event) => {
+      if (event.data?.includes('-')) event.preventDefault()
+      onBeforeInput?.(event)
+    },
+    onPaste: (event) => {
+      if (event.clipboardData.getData('text').includes('-')) event.preventDefault()
+      onPaste?.(event)
+    },
+  }
+}
+
+function configureInput(props) {
+  const rest = disableAutocomplete(props)
+  if (props.type !== 'number') return rest
+
+  return {
+    ...rest,
+    min: Math.max(0, Number(props.min) || 0),
+    ...nonNegativeInputEvents(props),
+    onChange: (event) => {
+      if (Number(event.target.value) < 0) event.target.value = '0'
+      props.onChange?.(event)
+    },
+  }
+}
+
+function configureInputNumber(props) {
+  return {
+    ...props,
+    min: Math.max(0, Number(props.min) || 0),
+    controls: false,
+    keyboard: false,
+    ...nonNegativeInputEvents(props),
+    onChange: (value) => {
+      props.onChange?.(value != null && Number(value) < 0 ? (props.stringMode ? '0' : 0) : value)
+    },
+  }
+}
+
+// Application props are on the left. When Ant Design changes or removes
+// attributes, only the mappings in this file need updating.
+export const Alert = createAdapter(AntAlert, 'GlobalAlert', ({ tone, type, ...props }) => ({
+  ...props,
+  type: tone ?? type,
+}))
+export const Avatar = createAdapter(AntAvatar, 'GlobalAvatar')
+export const Badge = createAdapter(AntBadge, 'GlobalBadge')
+export const Breadcrumb = createAdapter(AntBreadcrumb, 'GlobalBreadcrumb')
+export const Button = createAdapter(AntButton, 'GlobalButton', ({
+  variant,
+  busy,
+  isDanger,
+  type,
+  loading,
+  danger,
+  ...props
+}) => ({
+  ...props,
+  type: variant ?? type,
+  loading: busy ?? loading,
+  danger: isDanger ?? danger,
+}))
+export const Card = createAdapter(AntCard, 'GlobalCard', ({ bordered, variant, ...props }) => ({
+  ...props,
+  variant: variant ?? (bordered === undefined ? undefined : bordered ? 'outlined' : 'borderless'),
+}))
+export const Checkbox = createAdapter(AntCheckbox, 'GlobalCheckbox')
+Checkbox.Group = createAdapter(AntCheckbox.Group, 'GlobalCheckboxGroup')
+export const Col = createAdapter(AntCol, 'GlobalCol')
+export const ConfigProvider = createAdapter(AntConfigProvider, 'GlobalConfigProvider')
+ConfigProvider.useConfig = AntConfigProvider.useConfig
+export const Divider = createAdapter(AntDivider, 'GlobalDivider')
+export const Dropdown = createAdapter(AntDropdown, 'GlobalDropdown')
+export const Drawer = createAdapter(AntDrawer, 'GlobalDrawer')
+export const Empty = createAdapter(AntEmpty, 'GlobalEmpty')
+export const Form = createAdapter(AntForm, 'GlobalForm', disableAutocomplete)
+Form.Item = createAdapter(AntForm.Item, 'GlobalFormItem')
+Form.List = createAdapter(AntForm.List, 'GlobalFormList')
+Form.ErrorList = createAdapter(AntForm.ErrorList, 'GlobalFormErrorList')
+Form.Provider = createAdapter(AntForm.Provider, 'GlobalFormProvider')
+Form.useForm = AntForm.useForm
+Form.useFormInstance = AntForm.useFormInstance
+Form.useWatch = AntForm.useWatch
+export const Input = createAdapter(AntInput, 'GlobalInput', configureInput)
+Input.Search = createAdapter(AntInput.Search, 'GlobalSearchInput', disableAutocomplete)
+Input.Password = createAdapter(AntInput.Password, 'GlobalPasswordInput', disableAutocomplete)
+Input.TextArea = createAdapter(AntInput.TextArea, 'GlobalTextArea', disableAutocomplete)
+export const InputNumber = createAdapter(AntInputNumber, 'GlobalInputNumber', configureInputNumber)
+export const Layout = createAdapter(AntLayout, 'GlobalLayout')
+Layout.Header = createAdapter(AntLayout.Header, 'GlobalLayoutHeader')
+Layout.Content = createAdapter(AntLayout.Content, 'GlobalLayoutContent')
+Layout.Footer = createAdapter(AntLayout.Footer, 'GlobalLayoutFooter')
+Layout.Sider = createAdapter(AntLayout.Sider, 'GlobalLayoutSider')
+export const Menu = createAdapter(AntMenu, 'GlobalMenu')
+export const Modal = createAdapter(AntModal, 'GlobalModal', ({
+  visible,
+  busy,
+  unmountOnClose,
+  open,
+  confirmLoading,
+  destroyOnHidden,
+  preRender,
+  forceRender,
+  ...props
+}) => ({
+  ...props,
+  open: visible ?? open,
+  confirmLoading: busy ?? confirmLoading,
+  destroyOnHidden: unmountOnClose ?? destroyOnHidden,
+  forceRender: preRender ?? forceRender,
+}))
+Modal.confirm = AntModal.confirm
+Modal.info = AntModal.info
+Modal.success = AntModal.success
+Modal.error = AntModal.error
+Modal.warning = AntModal.warning
+Modal.destroyAll = AntModal.destroyAll
+Modal.useModal = AntModal.useModal
+export const Progress = createAdapter(AntProgress, 'GlobalProgress', ({
+  trackColor,
+  trailColor,
+  railColor,
+  ...props
+}) => ({
+  ...props,
+  railColor: trackColor ?? railColor ?? trailColor,
+}))
+export const Row = createAdapter(AntRow, 'GlobalRow')
+export const Spin = createAdapter(AntSpin, 'GlobalSpin')
+export const Statistic = createAdapter(AntStatistic, 'GlobalStatistic', ({
+  contentStyle,
+  valueStyle,
+  styles,
+  ...props
+}) => ({
+  ...props,
+  styles: {
+    ...styles,
+    content: contentStyle ?? styles?.content ?? valueStyle,
+  },
+}))
+export { Table } from './ResponsiveTable'
+export const Tag = createAdapter(AntTag, 'GlobalTag')
+export const Tooltip = createAdapter(AntTooltip, 'GlobalTooltip')

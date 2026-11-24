@@ -1,0 +1,17 @@
+import { Request, Response } from 'express';
+import { companyService } from './company.service.js';
+import { companyRepository } from './company.repository.js';
+import { CreateCompanyInput, ListCompaniesInput, UpdateCompanyInput } from './company.schemas.js';
+import { getAuditActor, getOfficeBranchId } from '../../utils/officeBranch.js';
+
+const send = (req: Request, res: Response, status: number, message: string, data: unknown): void => {
+  res.status(status).json({ status, success: true, message, data, requestId: req.headers['x-request-id'] });
+};
+export const companyController = {
+  async history(req: Request, res: Response) { send(req, res, 200, 'Company history retrieved successfully', await companyRepository.history(res.locals.params.companyId, getOfficeBranchId(res), res.locals.query)); },
+  async staffHistory(req: Request, res: Response) { send(req, res, 200, 'Company staff history retrieved successfully', await companyRepository.staffHistory(res.locals.params.companyId, getOfficeBranchId(res), res.locals.query)); },
+  async list(req: Request, res: Response) { send(req, res, 200, 'Companies retrieved successfully', await companyService.list(res.locals.query as ListCompaniesInput, getOfficeBranchId(res))); },
+  async get(req: Request, res: Response) { send(req, res, 200, 'Company retrieved successfully', await companyService.get((res.locals.params as { companyId: string }).companyId, getOfficeBranchId(res))); },
+  async create(req: Request, res: Response) { send(req, res, 201, 'Company created successfully', await companyService.create(res.locals.body as CreateCompanyInput, getOfficeBranchId(res), getAuditActor(res))); },
+  async update(req: Request, res: Response) { send(req, res, 200, 'Company updated successfully', await companyService.update((res.locals.params as { companyId: string }).companyId, res.locals.body as UpdateCompanyInput, getOfficeBranchId(res), getAuditActor(res))); },
+};

@@ -1,0 +1,257 @@
+import ThemeToggle from '../components/ui/ThemeToggle'
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import {
+  ArrowLeftOutlined,
+  UserAddOutlined,
+  UserOutlined,
+  LockOutlined,
+  useSaveConfirmation,
+} from '../components/global'
+import AkuraLogo from '../components/brand/AkuraLogo'
+import { authAPI } from '../services/api'
+import { useNotification } from '../context/NotificationContext'
+import {
+  AppButton,
+  AppInput,
+  AppForm,
+  AppDivider,
+} from '../components/ui'
+import './AuthPage.css'
+
+function RegisterPage() {
+  const [confirmSave, saveConfirmation] = useSaveConfirmation()
+  const [form] = AppForm.useForm()
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const notify = useNotification()
+
+  const handleRegister = async (values) => {
+    if (!await confirmSave('new account')) return
+    setLoading(true)
+    try {
+      await authAPI.register({
+        username:             values.username,
+        password:             values.password,
+        passwordConfirmation: values.passwordConfirmation,
+        firstName:            values.firstName,
+        lastName:             values.lastName,
+        email:                values.email?.trim().toLowerCase() || null,
+        telp:                 values.telp?.trim() || null,
+      })
+      notify.success('Registration Successful', 'Your account has been created successfully.')
+      navigate('/login')
+    } catch (err) {
+      const errMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Unable to register. Please try again.'
+      notify.error('Registration Failed', errMsg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="auth-root">
+      <ThemeToggle className="auth-theme-toggle" />
+      {saveConfirmation}
+      {/* ── Left Panel ─────────────────────────────────────────── */}
+      <div className="auth-left auth-left-register">
+        <div className="auth-left-content">
+          <button className="back-btn" onClick={() => navigate('/')}>
+            <ArrowLeftOutlined /> Back
+          </button>
+          <div className="auth-brand">
+            <AkuraLogo inverse size={60} />
+          </div>
+          <h2 className="auth-left-title">A shared workspace for inspection work.</h2>
+          <p className="auth-left-desc">
+            Create your account to get started. Your administrator manages your role, section, and branch assignment.
+          </p>
+          <div className="auth-features">
+            {[
+              'Quotations and customer coordination',
+              'Inspection services and work orders',
+              'Access managed by your administrator',
+            ].map((f) => (
+              <div key={f} className="auth-feature-item">{f}</div>
+            ))}
+          </div>
+          <div className="auth-inspection" aria-hidden="true" />
+          <p className="auth-image-caption">Independent inspection since 2001</p>
+        </div>
+      </div>
+
+      {/* ── Right Panel — Form ─────────────────────────────────── */}
+      <div className="auth-right">
+        <div className="auth-form-container auth-form-container-wide">
+          <div className="auth-form-header">
+            <h1 className="auth-form-title">Create an Account</h1>
+            <p className="auth-form-subtitle">
+              Already have an account?{' '}
+              <Link to="/login" className="auth-link">
+                Sign in now
+              </Link>
+            </p>
+          </div>
+
+          <AppForm
+            form={form}
+            name="register"
+            id="register-form"
+            onFinish={handleRegister}
+          >
+            {/* First Name & Last Name */}
+            <div className="form-row">
+              <AppForm.Item
+                label="First Name"
+                name="firstName"
+                rules={[{ required: true, whitespace: true, message: 'First name is required.' }]}
+              >
+                <AppInput
+                  id="input-firstname"
+                  prefixIcon={<UserOutlined />}
+                  placeholder="John"
+                  autoComplete="given-name"
+                />
+              </AppForm.Item>
+
+              <AppForm.Item
+                label="Last Name"
+                name="lastName"
+                rules={[{ required: true, whitespace: true, message: 'Last name is required.' }]}
+              >
+                <AppInput
+                  id="input-lastname"
+                  prefixIcon={<UserOutlined />}
+                  placeholder="Doe"
+                  autoComplete="family-name"
+                />
+              </AppForm.Item>
+            </div>
+
+            <div className="form-row">
+              <AppForm.Item
+                label="Email (optional)"
+                name="email"
+                rules={[
+                  { type: 'email', transform: (value) => value?.trim(), message: 'Enter a valid email address.' },
+                  { max: 255, message: 'Email must contain at most 255 characters.' },
+                ]}
+              >
+                <AppInput id="input-email" placeholder="john@example.com" maxLength={255} autoComplete="email" />
+              </AppForm.Item>
+              <AppForm.Item
+                label="Phone Number (optional)"
+                name="telp"
+                rules={[{ max: 50, message: 'Phone number must contain at most 50 characters.' }]}
+              >
+                <AppInput id="input-telp" type="tel" placeholder="+62 811 1234 5678" maxLength={50} autoComplete="tel" />
+              </AppForm.Item>
+            </div>
+
+            {/* Username */}
+            <AppForm.Item
+              label="Username"
+              name="username"
+              rules={[
+                { required: true, message: 'Username is required.' },
+                { min: 3, message: 'Username must contain at least 3 characters.' },
+                {
+                  pattern: /^[a-zA-Z0-9_]+$/,
+                  message: 'Use letters, numbers, and underscores only.',
+                },
+              ]}
+            >
+              <AppInput
+                id="input-username"
+                prefixIcon={<UserOutlined />}
+                placeholder="johndoe"
+                autoComplete="username"
+              />
+            </AppForm.Item>
+
+            {/* Password & Confirmation */}
+            <div className="form-row">
+              <AppForm.Item
+                label="Password"
+                name="password"
+                rules={[
+                  { required: true, message: 'Password is required.' },
+                  { min: 6, message: 'Password must contain at least 6 characters.' },
+                ]}
+              >
+                <AppInput
+                  id="input-password"
+                  inputType="password"
+                  prefixIcon={<LockOutlined />}
+                  placeholder="At least 6 characters"
+                  autoComplete="new-password"
+                />
+              </AppForm.Item>
+
+              <AppForm.Item
+                label="Confirm Password"
+                name="passwordConfirmation"
+                dependencies={['password']}
+                rules={[
+                  { required: true, message: 'Password confirmation is required.' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('password') === value)
+                        return Promise.resolve()
+                      return Promise.reject(new Error('Passwords do not match.'))
+                    },
+                  }),
+                ]}
+              >
+                <AppInput
+                  id="input-password-confirmation"
+                  inputType="password"
+                  prefixIcon={<LockOutlined />}
+                  placeholder="Re-enter your password"
+                  autoComplete="new-password"
+                />
+              </AppForm.Item>
+            </div>
+
+            {/* Submit */}
+            <AppForm.Item>
+              <AppButton
+                id="btn-register-submit"
+                variant="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                icon={<UserAddOutlined />}
+                className="auth-submit-btn"
+              >
+                {loading ? 'Creating account...' : 'Create Account'}
+              </AppButton>
+            </AppForm.Item>
+
+            <AppDivider>
+              <span className="divider-text">already have an account?</span>
+            </AppDivider>
+
+            <AppButton
+              id="btn-goto-login"
+              variant="outline"
+              block
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </AppButton>
+          </AppForm>
+
+          <p className="auth-footer-note">
+            Your administrator manages module access and branch assignment after registration.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default RegisterPage

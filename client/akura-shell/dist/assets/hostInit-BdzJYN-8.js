@@ -1,0 +1,1 @@
+import{n as e,t}from"./_virtual_mf___mfe_internal__akura_shell__mf_owner__1__H_A_I__hostAutoInit__H_A_I__-Cpp8z2Jy.js";export{t as hostInitPromise,e as initHost};

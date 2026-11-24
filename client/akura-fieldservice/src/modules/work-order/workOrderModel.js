@@ -1,0 +1,170 @@
+// The list filter offers every stored status. PATCH accepts a narrower set:
+// the backend rejects IN_PROGRESS with 400 because the DRAFT to IN_PROGRESS
+// transition happens only through POST /{id}/start.
+export const WORK_ORDER_STATUSES = ['DRAFT', 'IN_PROGRESS', 'COMPLETED', 'CANCELED']
+export const WORK_ORDER_PATCH_STATUSES = ['DRAFT', 'COMPLETED', 'CANCELED']
+export const canAccessWorkOrders = (user) => Boolean(user?.isActive && user.officeBranchId
+  && (['ADMIN', 'APP_MANAGER'].includes(user.role) || ['MARKETING', 'FIELD_SERVICE'].includes(user.section)))
+
+export const canEditWorkOrders = (user) => Boolean(canAccessWorkOrders(user)
+  && user.section === 'MARKETING' && user.role === 'USER')
+
+const canChangeWorkOrder = (user, record) => Boolean(canAccessWorkOrders(user) && user.section === 'MARKETING'
+  && record?.id && (!record.officeBranchId || record.officeBranchId === user.officeBranchId)
+  && !record.revoked && Number.isInteger(record.version) && record.version >= 0 && record.version < 2147483647)
+
+export const canStartWorkOrder = (user, record) => canChangeWorkOrder(user, record) && record.status === 'DRAFT'
+
+export const canRevokeWorkOrder = (user, record) => canChangeWorkOrder(user, record)
+  && ['DRAFT', 'IN_PROGRESS'].includes(record.status)
+
+export const workOrderFormValues = (record) => ({
+  startDate: record.startDate?.slice(0, 10) || '',
+  endDate: record.endDate?.slice(0, 10) || '',
+  status: record.status,
+  inspectors: (record.inspectors || []).map((inspector) => inspector.name),
+})
+
+// Quotation creation admits Marketing USER and ADMIN. Company creation keeps
+// the USER restriction; neither route permits another section or APP_MANAGER.
+export const canCreateWorkOrders = (user, basis = 'company') => Boolean(canAccessWorkOrders(user)
+  && user.section === 'MARKETING' && ['company', 'quotation'].includes(basis)
+  && (user.role === 'USER' || basis === 'quotation' && user.role === 'ADMIN'))
+
+export function inspectorOptions(users = []) {
+  const names = new Map()
+  for (const user of users) {
+    const name = [user.firstName, user.lastName].filter((part) => typeof part === 'string' && part.trim()).map((part) => part.trim()).join(' ')
+    if (name && name.length <= 255 && !names.has(name.toLowerCase())) names.set(name.toLowerCase(), { value: name, label: name })
+  }
+  return [...names.values()]
+}
+
+// The quantities sent to the backend are Decimal(15,3) values, so the client
+// keeps at most three decimals and never sends a negative amount.
+export const MAX_QUANTITY = 999999999999.999
+
+export function normalizeQuantity(value) {
+  if (!['string', 'number'].includes(typeof value) || !/^\d{1,12}(\.\d{1,3})?$/.test(String(value))) return null
+  const number = Number(value)
+  if (!Number.isFinite(number) || number < 0 || number > MAX_QUANTITY) return null
+  // Decimal(15,3) accepts three decimals; more precision would be rounded by
+  // the database, so it is rejected before the request is sent.
+  if (!/^\d{1,12}(\.\d{1,3})?$/.test(String(number))) return null
+  return number
+}
+
+export const WORK_ORDER_REPORT_DATES = [
+  ['dailyReport', 'Daily Report'], ['officialReportDelivery', 'Official Report Delivery'],
+  ['dailyReportDelivery', 'Daily Report Delivery'], ['poDate', 'PO Date'],
+]
+const validId = (value) => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+
+export function workOrderHeaderPayload(values, required = false) {
+  const header = {}
+  for (const [key, max] of [['subject', 255], ['poNumber', 100]]) {
+    if (!required && (values[key] == null || values[key] === '')) continue
+    if (typeof values[key] !== 'string' || !values[key].trim() || values[key].trim().length > max) throw new Error(`Enter a valid ${key}.`)
+    header[key] = values[key].trim()
+  }
+  if (required || values.officialReport != null) {
+    if (typeof values.officialReport !== 'boolean') throw new Error('Select whether an official report is required.')
+    header.officialReport = values.officialReport
+  }
+  for (const [key, label] of WORK_ORDER_REPORT_DATES) {
+    if (!required && (values[key] == null || values[key] === '')) continue
+    if (!validDate(values[key])) throw new Error(`Enter a valid ${label.toLowerCase()} date.`)
+    header[key] = values[key]
+  }
+  return header
+}
+
+export function workOrderCreatePayload(values, { quotation, company, items, quotationItems = [] }) {
+  const quotationBasis = values.basis !== 'company'
+  if (quotationBasis && !validId(quotation?.id)) throw new Error('Select an approved quotation.')
+  if (!quotationBasis && (!validId(company?.id) || company.revoked)) throw new Error('Select an active company.')
+  if (!validDate(values.startDate)) throw new Error('Enter a valid start date.')
+  if ((quotationBasis || values.endDate) && !validDate(values.endDate)) throw new Error('Enter a valid end date.')
+  if (values.endDate && values.endDate < values.startDate) throw new Error('End date must be on or after start date.')
+  const inspectors = (Array.isArray(values.inspectors) ? values.inspectors : []).map((name) => typeof name === 'string' ? name.trim() : '')
+  if (inspectors.length < 1 || inspectors.length > 100) throw new Error('Select at least one and up to 100 inspectors.')
+  if (inspectors.some((name) => !name || name.length > 255)) throw new Error('Select inspector names with 1–255 characters.')
+  if (new Set(inspectors.map((name) => name.toLowerCase())).size !== inspectors.length) throw new Error('Inspector names must be unique.')
+  const lines = (items || []).filter((item) => item.selected)
+  if (lines.length < 1) throw new Error('Select at least one item for the work order.')
+  // The quotation option list carries no lines, so membership is checked against
+  // the quotation detail that produced the selectable items.
+  const quotationItemSizeIds = new Set(quotationItems
+    .filter((item) => item?.isActive !== false)
+    .map((item) => item?.itemSizeId)
+    .filter((itemSizeId) => typeof itemSizeId === 'string' && itemSizeId)
+    .map((itemSizeId) => itemSizeId.toLowerCase()))
+  const itemIds = new Set()
+  const payloadItems = lines.map((item) => {
+    if (!validId(item.itemSizeId)) throw new Error('Select a valid item size.')
+    const id = item.itemSizeId.toLowerCase()
+    if (itemIds.has(id)) throw new Error('Work order items must be unique.')
+    itemIds.add(id)
+    if (quotationBasis && !quotationItemSizeIds.has(id)) {
+      throw new Error('Every selected item must belong to the selected quotation. Reload the quotation items and try again.')
+    }
+    const quantityInspection = normalizeQuantity(item.quantityInspection)
+    const quantityMaintenance = normalizeQuantity(item.quantityMaintenance)
+    if (quantityInspection === null) throw new Error(`Enter a valid inspection quantity for ${item.itemName || 'the item'}.`)
+    if (quantityMaintenance === null) throw new Error(`Enter a valid maintenance quantity for ${item.itemName || 'the item'}.`)
+    return { itemSizeId: item.itemSizeId, quantityInspection, quantityMaintenance }
+  })
+  const basis = quotationBasis ? { quotationId: quotation.id } : { companyId: company.id }
+  if (!quotationBasis && values.contractId) {
+    if (!validId(values.contractId) || values.contractId !== company.contract?.id) throw new Error('Select the active contract of this company.')
+    basis.contractId = values.contractId
+  }
+  return { ...basis, ...workOrderHeaderPayload(values, !quotationBasis), startDate: values.startDate,
+    ...(values.endDate ? { endDate: values.endDate } : {}), inspectors, items: payloadItems }
+}
+
+export function workOrderCreateComplete(values = {}, itemCount = 0) {
+  const validEndDate = values.basis === 'company' && !values.endDate
+    || validDate(values.endDate) && values.endDate >= values.startDate
+  return validDate(values.startDate) && validEndDate
+    && Array.isArray(values.inspectors) && values.inspectors.length > 0
+    && itemCount > 0
+}
+
+function validDate(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value || '')
+    && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value
+}
+
+export function workOrderUpdatePayload(values, record) {
+  if (record.revoked) throw new Error('Revoked work orders cannot be edited.')
+  if (!Number.isInteger(record.version) || record.version < 0 || record.version > 2147483646) throw new Error('Reload the work order before saving.')
+  if (!validDate(values.startDate)) throw new Error('Enter a valid start date.')
+  if (values.endDate && (!validDate(values.endDate) || values.endDate < values.startDate)) throw new Error('End date must be on or after start date.')
+  if (values.status !== record.status && !WORK_ORDER_PATCH_STATUSES.includes(values.status)) throw new Error('Select a valid status.')
+  const inspectors = (values.inspectors || []).map((name) => name.trim())
+  if (inspectors.length > 100 || inspectors.some((name) => !name || name.length > 255)) throw new Error('Enter up to 100 inspector names, each with 1–255 characters.')
+  if (new Set(inspectors.map((name) => name.toLowerCase())).size !== inspectors.length) throw new Error('Inspector names must be unique.')
+  const next = {
+    startDate: values.startDate,
+    endDate: values.endDate || null,
+    ...(values.status !== record.status ? { status: values.status } : {}),
+    inspectors,
+  }
+  const previous = { ...workOrderFormValues(record), endDate: record.endDate?.slice(0, 10) || null }
+  const changes = Object.fromEntries(Object.entries(next).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(previous[key])))
+  return Object.keys(changes).length ? { ...changes, version: record.version } : null
+}
+
+export function formatHistoryValue(value) {
+  if (value == null || value === '') return '-'
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  if (Array.isArray(value)) return value.length ? value.map(formatHistoryValue).join(', ') : '-'
+  if (typeof value === 'object') return value.name || value.number || value.no || JSON.stringify(value)
+  return String(value)
+}
+
+export const workOrderBasisLabel = (record) => record.quotationId
+  ? `Quotation ${record.quotationNo ?? record.quotationId}`
+  : record.contractId ? `Contract ${record.contractNumber || record.contractId}`
+    : `Company ${record.company || record.companyId || '-'}`

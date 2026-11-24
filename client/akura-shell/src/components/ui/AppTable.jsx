@@ -1,0 +1,46 @@
+import { DatabaseOutlined, Empty, Table } from '../global'
+import './AppTable.css'
+
+/**
+ * AppTable — Wrapper Ant Design Table
+ *
+ * Default:
+ * - Custom empty state bermerek Akura
+ * - Sticky header
+ * - Zebra rows (optional via the zebraRows prop)
+ *
+ * @param {boolean} zebraRows  — alternating row background
+ * @param {string}  emptyText  — message shown when data is empty
+ */
+function AppTable({
+  zebraRows = false,
+  emptyText = 'No data available',
+  className = '',
+  locale,
+  ...rest
+}) {
+  const emptyState = (
+    <Empty
+      image={
+        <div className="app-table-empty-icon">
+          <DatabaseOutlined />
+        </div>
+      }
+      description={
+        <span style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 500 }}>
+          {emptyText}
+        </span>
+      }
+    />
+  )
+
+  return (
+    <Table
+      className={`app-table ${zebraRows ? 'app-table--zebra' : ''} ${className}`}
+      locale={{ emptyText: emptyState, ...locale }}
+      {...rest}
+    />
+  )
+}
+
+export default AppTable

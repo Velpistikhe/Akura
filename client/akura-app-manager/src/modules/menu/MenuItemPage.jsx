@@ -1,0 +1,312 @@
+import { useSaveConfirmation } from '../../components/global'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  App,
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Popconfirm,
+  Select,
+  Space,
+  Switch,
+  Table,
+  TableSearchFilter,
+  Tag,
+  Typography,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from '../../components/global'
+import { menuService } from '../../services/menuService'
+import { menuItemService } from '../../services/menuItemService'
+import { loadMenuOptions } from './menuOptions'
+import './MenuPage.css'
+
+const DEFAULT_PAGE_SIZE = 50
+
+function getSortOrder(column, sortBy, sortOrder) {
+  if (sortBy !== column) return null
+  return sortOrder === 'asc' ? 'ascend' : 'descend'
+}
+
+function MenuItemPage() {
+  const { message } = App.useApp()
+  const [confirmSave, saveConfirmation] = useSaveConfirmation()
+  const [form] = Form.useForm()
+  const [items, setItems] = useState([])
+  const [parentMenus, setParentMenus] = useState([])
+  const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 })
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [search, setSearch] = useState('')
+  const [menuFilter, setMenuFilter] = useState('')
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [loadingDetailId, setLoadingDetailId] = useState(null)
+  const [editingItem, setEditingItem] = useState(null)
+  const [itemIsActive, setItemIsActive] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+  const requestIdRef = useRef(0)
+
+  const menuOptions = useMemo(
+    () => parentMenus
+      .filter((menu) => menu.hasItem)
+      .map((menu) => ({ value: menu.id, label: menu.label })),
+    [parentMenus],
+  )
+  const menuById = useMemo(
+    () => new Map(parentMenus.map((menu) => [menu.id, menu])),
+    [parentMenus],
+  )
+
+  const loadParentMenus = useCallback(async () => {
+    try {
+      setParentMenus(await loadMenuOptions(menuService.list, 'menus', { hasItem: true }))
+    } catch (error) {
+      message.error(error.message)
+    }
+  }, [message])
+
+  const loadItems = useCallback(async () => {
+    const requestId = ++requestIdRef.current
+    setLoading(true)
+    try {
+      const response = await menuItemService.list({
+        page,
+        limit: pageSize,
+        search,
+        menuId: menuFilter,
+        sortBy,
+        sortOrder,
+      })
+      if (requestId !== requestIdRef.current) return
+      setItems(response.data?.items || [])
+      setPagination(response.data?.pagination || { page, total: 0, totalPages: 1 })
+    } catch (error) {
+      if (requestId === requestIdRef.current) message.error(error.message)
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false)
+    }
+  }, [menuFilter, message, page, pageSize, search, sortBy, sortOrder])
+
+  useEffect(() => {
+    loadParentMenus()
+  }, [loadParentMenus])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(loadItems, 300)
+    return () => clearTimeout(timeoutId)
+  }, [loadItems])
+
+  useEffect(() => {
+    if (!modalOpen) return
+
+    setItemIsActive(editingItem ? editingItem.isActive === true : true)
+    form.resetFields()
+    form.setFieldsValue(editingItem ? {
+      menuId: editingItem.menuId || editingItem.menu?.id,
+      key: editingItem.key,
+      label: editingItem.label,
+      order: editingItem.order,
+    } : {
+      menuId: menuOptions.some((option) => option.value === menuFilter) ? menuFilter : undefined,
+      key: '',
+      label: '',
+      order: 0,
+    })
+  }, [editingItem, form, menuFilter, menuOptions, modalOpen])
+
+  const openCreate = () => {
+    setEditingItem(null)
+    setModalOpen(true)
+  }
+
+  const openEdit = async (item) => {
+    setLoadingDetailId(item.id)
+    try {
+      const response = await menuItemService.get(item.id)
+      const detail = response.data?.menuItem || response.data?.item || response.data
+
+      if (!detail?.id) throw new Error('Invalid menu item detail data.')
+
+      setEditingItem(detail)
+      setModalOpen(true)
+    } catch (error) {
+      message.error(error.message)
+    } finally {
+      setLoadingDetailId(null)
+    }
+  }
+
+  const saveItem = async () => {
+    const values = await form.validateFields()
+    if (!await confirmSave('menu item')) return
+    setSaving(true)
+    try {
+      if (editingItem) {
+        await menuItemService.update(editingItem.id, { ...values, isActive: itemIsActive })
+        message.success('Menu item updated successfully.')
+      } else {
+        await menuItemService.create({
+          menuId: values.menuId,
+          key: values.key,
+          label: values.label,
+          order: values.order,
+        })
+        message.success('Menu item created successfully.')
+      }
+      setModalOpen(false)
+      await loadItems()
+    } catch (error) {
+      message.error(error.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deleteItem = async (item) => {
+    try {
+      await menuItemService.remove(item.id)
+      message.success('Menu item deleted successfully.')
+      if (items.length === 1 && page > 1) setPage((current) => current - 1)
+      else await loadItems()
+    } catch (error) {
+      message.error(error.message)
+    }
+  }
+
+  const handleTableChange = (tablePagination, filters, sorter) => {
+    const nextPageSize = tablePagination.pageSize || pageSize
+    setPageSize(nextPageSize)
+    setPage(nextPageSize !== pageSize ? 1 : tablePagination.current || 1)
+    setMenuFilter(filters.menuId?.[0] || '')
+    setSortBy(sorter.order ? sorter.field : '')
+    setSortOrder(sorter.order ? (sorter.order === 'ascend' ? 'asc' : 'desc') : '')
+  }
+
+  const columns = [
+    {
+      title: 'Menu',
+      dataIndex: 'menuId',
+      key: 'menuId',
+      sorter: true,
+      sortOrder: getSortOrder('menuId', sortBy, sortOrder),
+      filters: menuOptions.map((option) => ({ text: option.label, value: option.value })),
+      filterMultiple: false,
+      filteredValue: menuFilter ? [menuFilter] : null,
+      render: (menuId) => menuById.get(menuId)?.label || menuId,
+    },
+    {
+      title: 'Key',
+      dataIndex: 'key',
+      key: 'key',
+      sorter: true,
+      sortOrder: getSortOrder('key', sortBy, sortOrder),
+      filteredValue: search ? [search] : null,
+      filterDropdown: (props) => (
+        <TableSearchFilter
+          {...props}
+          placeholder="Search key or label"
+          onSearch={(value) => { setSearch(value); setPage(1) }}
+        />
+      ),
+      render: (value) => <Typography.Text code>{value}</Typography.Text>,
+    },
+    { title: 'Label', dataIndex: 'label', key: 'label', sorter: true, sortOrder: getSortOrder('label', sortBy, sortOrder) },
+    {
+      title: 'Generated Path',
+      key: 'generatedPath',
+      render: (_, item) => {
+        const menuKey = menuById.get(item.menuId)?.key
+        return <Typography.Text code>{menuKey ? `/${menuKey}/${item.key}` : '—'}</Typography.Text>
+      },
+    },
+    { title: 'Order', dataIndex: 'order', key: 'order', width: 90, sorter: true, sortOrder: getSortOrder('order', sortBy, sortOrder) },
+    {
+      title: 'Status',
+      dataIndex: 'isActive',
+      key: 'isActive',
+      width: 110,
+      sorter: true,
+      sortOrder: getSortOrder('isActive', sortBy, sortOrder),
+      render: (value) => <Tag color={value ? 'success' : 'default'}>{value ? 'Active' : 'Inactive'}</Tag>,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 130,
+      fixed: 'right',
+      render: (_, item) => (
+        <Space>
+          <Button
+            variant="text"
+            icon={<EditOutlined />}
+            busy={loadingDetailId === item.id}
+            onClick={() => openEdit(item)}
+            aria-label={`Edit ${item.label}`}
+          />
+          <Popconfirm title="Delete menu item?" okText="Delete" cancelText="Cancel" okButtonProps={{ danger: true }} onConfirm={() => deleteItem(item)}>
+            <Button isDanger variant="text" icon={<DeleteOutlined />} aria-label={`Delete ${item.label}`} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ]
+
+  return (
+    <section className="menu-page">
+      {saveConfirmation}
+      <div className="menu-page-heading">
+        <div>
+          <Typography.Title level={2}>Menu Item Management</Typography.Title>
+          <Typography.Text tone="secondary">Manage the active routes displayed within each menu.</Typography.Text>
+        </div>
+        <Button variant="primary" icon={<PlusOutlined />} onClick={openCreate} disabled={!menuOptions.length}>Add Menu Item</Button>
+      </div>
+
+      <Card>
+        <Table
+          rowKey="id"
+          busy={loading}
+          columns={columns}
+          dataSource={items}
+          scroll={{ x: 950 }}
+          onChange={handleTableChange}
+          pagination={{
+            current: pagination.page,
+            pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            pageSizeOptions: [10, 20, 50, 100],
+            showTotal: (total) => `${total} menu item`,
+          }}
+        />
+      </Card>
+
+      <Modal title={editingItem ? 'Edit Menu Item' : 'Add Menu Item'} visible={modalOpen} busy={saving} okText={editingItem ? 'Save' : 'Add'} cancelText="Cancel" onOk={saveItem} onCancel={() => setModalOpen(false)} preRender unmountOnClose>
+        <Form form={form} layout="vertical" preserve={false}>
+          <Form.Item name="menuId" label="Parent Menu" rules={[{ required: true, message: 'Parent menu is required.' }]}>
+            <Select showSearch optionFilterProp="label" options={menuOptions} placeholder="Select menu" />
+          </Form.Item>
+          <Form.Item name="key" label="Key" rules={[{ required: true, message: 'Key is required.' }, { pattern: /^[a-z0-9_-]+$/, message: 'Use lowercase letters, numbers, underscores, or hyphens.' }, { max: 100 }]}>
+            <Input placeholder="example: menu" />
+          </Form.Item>
+          <Form.Item name="label" label="Label" rules={[{ required: true, message: 'Label is required.' }, { max: 200 }]}>
+            <Input placeholder="example: Menu" />
+          </Form.Item>
+          <Form.Item name="order" label="Order" rules={[{ required: true, message: 'Order is required.' }]}>
+            <InputNumber min={0} precision={0} className="menu-order-input" />
+          </Form.Item>
+          {editingItem && <Form.Item label="Status"><Switch checked={itemIsActive} onChange={setItemIsActive} activeLabel="Active" inactiveLabel="Inactive" /></Form.Item>}
+        </Form>
+      </Modal>
+    </section>
+  )
+}
+
+export default MenuItemPage

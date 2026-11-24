@@ -1,0 +1,12 @@
+﻿.marketing-overview { width: min(100%, 1680px); min-height: 100%; margin-inline: auto; }
+.marketing-overview-heading { padding-bottom: 24px; margin-bottom: 32px; border-bottom: 1px solid var(--border, #d7dfe5); }
+.marketing-overview-heading h1.ant-typography { margin: 0 0 8px; color: var(--text-primary, #213449); font-size: clamp(28px, 3vw, 36px); font-weight: 600; letter-spacing: -.025em; }
+.marketing-process { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; list-style: none; counter-reset: process; }
+.marketing-process li { min-width: 0; padding: 24px; border-top: 3px solid var(--gold, #e5b64b); background: var(--surface, #fff); counter-increment: process; }
+.marketing-process li::before { content: counter(process); display: block; margin-bottom: 24px; color: var(--text-secondary, #536679); font-size: 24px; font-variant-numeric: tabular-nums; }
+.marketing-process h2 { margin-bottom: 10px; color: var(--text-primary, #213449); font-size: 19px; font-weight: 600; line-height: 1.4; }
+.marketing-process p, .marketing-overview-hint { color: var(--text-secondary, #536679); font-size: 14px; line-height: 1.7; }
+.marketing-overview-hint { margin-top: 24px; }
+@media (max-width: 900px) { .marketing-process { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+input[type='number'] { appearance: textfield; -moz-appearance: textfield; }
+input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }

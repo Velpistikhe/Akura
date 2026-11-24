@@ -1,0 +1,136 @@
+/* =============================================
+   THEME LAYER
+   - Dark mode tokens
+   - Dashboard layout overrides that require !important
+   Light mode tokens are defined in index.css.
+   ============================================= */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-light: #101b29;
+  --bg-card: #172639;
+  --surface: #172639;
+  --surface-subtle: #1c2e42;
+  --surface-muted: #24394e;
+  --text-primary: #e8eff6;
+  --text-secondary: #a6b7c7;
+  --text-muted: #a6b7c7;
+  --border: #34465b;
+  --header-bg: #172639;
+  --primary: #a3c2ef;
+  --primary-light: #bad3f5;
+  --primary-lighter: #c7ddf8;
+  --accent: #ff9ca5;
+  --link: #a3c2ef;
+  --action-bg: #a3c2ef;
+  --action-hover: #bad3f5;
+  --action-text: #13233a;
+  --gradient-primary: var(--action-bg);
+  --gradient-primary-hover: var(--action-hover);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 20%), 0 2px 8px rgb(0 0 0 / 16%);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 22%), 0 8px 24px rgb(0 0 0 / 24%);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 26%), 0 18px 44px rgb(0 0 0 / 32%);
+  --shadow-xl: 0 8px 16px rgb(0 0 0 / 30%), 0 32px 72px rgb(0 0 0 / 44%);
+  --shadow-primary: 0 6px 18px rgb(77 114 190 / 34%);
+  --shadow-accent: 0 6px 18px rgb(224 32 32 / 30%);
+}
+
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: rgba(175, 190, 211, 0.24);
+}
+
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-lighter);
+}
+
+html .dashboard-root, html .dashboard-main {
+  background: var(--bg-light) !important;
+}
+html .dashboard-content { background: var(--bg-light) !important; }
+html .dashboard-header {
+  background: var(--header-bg, var(--surface)) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  height: var(--header-height) !important;
+  line-height: var(--header-height) !important;
+}
+html .dashboard-sider {
+  background: #182b49 !important;
+  box-shadow: none;
+  border-right: 1px solid rgb(255 255 255 / 6%);
+}
+.dashboard-sider .ant-layout-sider-children { display: flex; flex-direction: column; height: 100%; }
+html .sider-logo {
+  height: var(--header-height) !important;
+  min-height: var(--header-height) !important;
+  padding-block: 0 !important;
+  box-sizing: border-box;
+}
+html .sider-menu .ant-menu-item-selected {
+  background: #2b4260 !important;
+  box-shadow: inset 3px 0 var(--gold) !important;
+}
+/* Clear the Ant Design dark background overlay to reveal the brand gradient */
+html .sider-menu .ant-menu-item-selected::before,
+html .sider-menu .ant-menu-item-selected::after {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+html .sider-menu .ant-menu-item, html .sider-menu .ant-menu-submenu-title { border-radius: var(--radius-sm) !important; }
+html .sider-user { background: transparent; }
+html .header-toggle-btn, html .header-icon-btn,
+html .header-user-name, html .header-breadcrumb .ant-breadcrumb-link,
+html .header-breadcrumb .ant-breadcrumb-link:last-child { color: var(--text-primary) !important; }
+html .header-user-role { color: var(--text-muted); }
+html .header-user-btn { background: transparent; border: 1px solid transparent; color: var(--text-primary); text-align: left; }
+html .header-user-btn:hover, html .header-toggle-btn:hover { background: var(--surface-muted) !important; }
+html .header-divider { background: var(--border); margin-inline: 10px; }
+
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-width: 44px; height: 44px; padding: 0 12px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text-primary);
+  font-size: 12px; font-weight: 600; line-height: 1; cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.theme-toggle .anticon { font-size: 17px; }
+.theme-toggle:hover { background: var(--surface-muted); border-color: var(--text-muted); }
+.theme-toggle:active { transform: scale(.96); }
+html :focus-visible { outline: 3px solid #739de6; outline-offset: 3px; }
+.auth-theme-toggle { position: absolute; top: 20px; right: 24px; z-index: 5; }
+
+html .app-card--default, html .app-card--outlined { border-color: var(--border) !important; box-shadow: var(--shadow-sm) !important; }
+html .app-card .ant-card-head { border-color: var(--border) !important; }
+html .app-card--hover:hover { transform: translateY(-3px) !important; box-shadow: var(--shadow-lg) !important; }
+html .app-btn--outline { color: var(--text-primary) !important; border-color: var(--border) !important; }
+html .ant-table-wrapper .ant-table-thead > tr > th { background: var(--surface-subtle) !important; color: var(--text-secondary) !important; }
+html .ant-table-wrapper .ant-table-tbody > tr:hover > td { background: var(--surface-muted) !important; }
+html .app-table .ant-table-tbody > tr > td { border-color: var(--border) !important; }
+html .ant-modal .ant-modal-title { color: var(--text-primary); }
+html .ant-modal .ant-modal-content { border-color: var(--border); }
+
+html[data-theme='dark'] .landing-root {
+  --akura-ink: var(--text-primary); --akura-muted: var(--text-secondary); --akura-surface: var(--surface-subtle);
+  background: var(--bg-light);
+}
+html[data-theme='dark'] .landing-nav { background: var(--header-bg); border-color: var(--border); }
+html[data-theme='dark'] .landing-nav-links a, html[data-theme='dark'] .nav-login-btn { color: var(--text-primary) !important; }
+html[data-theme='dark'] .landing-root :is(.landing-intro, .service-card, .landing-choice) { background: var(--surface); }
+html[data-theme='dark'] .landing-root :is(.intro-heading h2, .section-heading-row h2, .choice-content h2, .service-card h3, .strength-item, .intro-copy a, .service-card a) { color: var(--text-primary); }
+html[data-theme='dark'] .landing-root .strength-item { background: var(--surface-subtle); }
+html[data-theme='dark'] .landing-logo { padding: 5px 8px; border-radius: 8px; background: #fff; }
+
+@media (max-width: 768px) {
+  html .dashboard-header { height: 64px !important; line-height: 64px !important; }
+  html .sider-logo { height: 64px !important; min-height: 64px !important; }
+  .theme-toggle span:not(.anticon) { display: none; }
+  .theme-toggle { padding-inline: 10px; }
+  .auth-theme-toggle { top: 14px; right: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html *, html *::before, html *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,293 @@
+import bcrypt from 'bcryptjs';
+import { User } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../../config/db.js';
+import { authRepository } from './auth.repository.js';
+import { AuthResult, AuthTokens, RefreshTransactionResult, UserSanitized } from '../../types/auth.types.js';
+import { HttpError, RefreshTokenRejectedError } from '../../utils/httpError.js';
+import { createRefreshTokenExpiry } from '../../utils/tokenExpiry.js';
+import { createAuthTokens, verifyRefreshToken } from '../../utils/tokens.js';
+import { sanitizeUser } from '../../utils/userMapper.js';
+import { saveUserHistory, saveSecurityAudit, UserAuditActor, type SecurityAuditContext } from '../../utils/userHistory.js';
+import { env } from '../../config/env.js';
+
+// Self-service mutations are always performed by the affected user.
+const selfActor = (user: User): UserAuditActor => ({
+  id: user.id,
+  name: `${user.firstName} ${user.lastName}`.trim() || user.username,
+});
+
+class AuthService {
+  async register(
+    username: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    email?: string | null,
+    telp?: string | null,
+    context?: SecurityAuditContext,
+  ): Promise<void> {
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await prisma.$transaction(async (tx) => {
+      const created = await authRepository.createUser(tx, username, passwordHash, firstName, lastName, email, telp);
+      // The registration is recorded in the same transaction as the user row,
+      // so the audit trail can never show a registration that did not happen.
+      await saveSecurityAudit(tx, {
+        module: 'auth',
+        eventType: 'REGISTER',
+        action: 'REGISTER',
+        outcome: 'SUCCESS',
+        userId: created?.id ?? null,
+        username,
+        context,
+      });
+    });
+  }
+
+  async login(username: string, password: string, context?: SecurityAuditContext): Promise<AuthResult> {
+    const user = await authRepository.findUserByUsername(username);
+    if (!user?.password) {
+      // A login attempt for an unknown username is recorded, so a brute force
+      // attempt is visible in the audit trail.
+      await saveSecurityAudit(prisma, {
+        module: 'auth',
+        eventType: 'LOGIN_FAILED',
+        action: 'LOGIN',
+        outcome: 'FAILURE',
+        username,
+        context,
+        detail: { reason: 'unknown username' },
+      });
+      throw new HttpError('Invalid username or password', 401);
+    }
+
+    if (!await bcrypt.compare(password, user.password.passwordHash)) {
+      await saveSecurityAudit(prisma, {
+        module: 'auth',
+        eventType: 'LOGIN_FAILED',
+        action: 'LOGIN',
+        outcome: 'FAILURE',
+        userId: user.id,
+        username,
+        officeBranchId: user.officeBranchId,
+        context,
+        detail: { reason: 'wrong password' },
+      });
+      throw new HttpError('Invalid username or password', 401);
+    }
+
+    if (!user.isActive) {
+      await saveSecurityAudit(prisma, {
+        module: 'auth',
+        eventType: 'LOGIN_FAILED',
+        action: 'LOGIN',
+        outcome: 'FAILURE',
+        userId: user.id,
+        username,
+        officeBranchId: user.officeBranchId,
+        context,
+        detail: { reason: 'inactive account' },
+      });
+      throw new HttpError('Account is inactive. Please contact administrator.', 403);
+    }
+
+    const tokens = createAuthTokens(user);
+    await authRepository.saveRefreshToken(
+      prisma,
+      user.id,
+      tokens.refreshToken,
+      createRefreshTokenExpiry(),
+      uuidv4()
+    );
+    await saveSecurityAudit(prisma, {
+      module: 'auth',
+      eventType: 'LOGIN',
+      action: 'LOGIN',
+      outcome: 'SUCCESS',
+      userId: user.id,
+      username: user.username,
+      officeBranchId: user.officeBranchId,
+      context,
+    });
+    return { user: sanitizeUser(user), tokens };
+  }
+
+  async refreshToken(refreshToken: string, context?: SecurityAuditContext): Promise<AuthTokens> {
+    try {
+      verifyRefreshToken(refreshToken);
+    } catch (error) {
+      if (error instanceof HttpError) {
+        await authRepository.revokeRefreshToken(prisma, refreshToken);
+        // A rejected token is recorded: a replayed or tampered token is a
+        // security event.
+        await saveSecurityAudit(prisma, {
+          module: 'auth',
+          eventType: 'TOKEN_REFRESH_REJECTED',
+          action: 'TOKEN_REFRESH',
+          outcome: 'FAILURE',
+          context,
+          detail: { reason: error.message },
+        });
+        throw new RefreshTokenRejectedError(error.message, error.statusCode);
+      }
+      throw error;
+    }
+
+    const result = await prisma.$transaction<RefreshTransactionResult>(async (tx) => {
+      const tokenRow = await authRepository.findRefreshTokenForUpdate(tx, refreshToken);
+      if (!tokenRow) {
+        return { success: false, statusCode: 401, message: 'Refresh token is invalid' };
+      }
+
+      if (tokenRow.isRevoked) {
+        await authRepository.revokeTokenFamily(tx, tokenRow.familyId);
+        return {
+          success: false,
+          statusCode: 401,
+          message: 'Refresh token reuse detected. All sessions in this token family have been revoked.',
+        };
+      }
+
+      if (tokenRow.expiresAt < new Date()) {
+        await authRepository.revokeRefreshToken(tx, refreshToken);
+        return { success: false, statusCode: 401, message: 'Refresh token has expired' };
+      }
+
+      const now = new Date();
+      const idleMilliseconds = env.JWT_REFRESH_IDLE_TIMEOUT_MINUTES * 60 * 1_000;
+      if (now.getTime() - tokenRow.lastActivityAt.getTime() >= idleMilliseconds) {
+        await authRepository.revokeTokenFamily(tx, tokenRow.familyId);
+        return {
+          success: false,
+          statusCode: 401,
+          message: `Refresh token session expired after ${env.JWT_REFRESH_IDLE_TIMEOUT_MINUTES} minutes of inactivity`,
+        };
+      }
+
+      const user = await authRepository.findUserByIdForUpdate(tx, tokenRow.userId);
+      if (!user) {
+        return { success: false, statusCode: 401, message: 'Associated user no longer exists' };
+      }
+      if (!user.isActive) {
+        await authRepository.revokeTokenFamily(tx, tokenRow.familyId);
+        return { success: false, statusCode: 403, message: 'Account is inactive' };
+      }
+
+      await authRepository.revokeRefreshToken(tx, refreshToken, now);
+      const tokens = createAuthTokens(user);
+      await authRepository.saveRefreshToken(
+        tx,
+        user.id,
+        tokens.refreshToken,
+        createRefreshTokenExpiry(),
+        tokenRow.familyId,
+        now
+      );
+      // The rotation is recorded in the same transaction as the token change.
+      await saveSecurityAudit(tx, {
+        module: 'auth',
+        eventType: 'TOKEN_REFRESH',
+        action: 'TOKEN_REFRESH',
+        outcome: 'SUCCESS',
+        userId: user.id,
+        username: user.username,
+        officeBranchId: user.officeBranchId,
+        context,
+      });
+      return { success: true, tokens };
+    });
+
+    if (!result.success) {
+      // Every refusal is recorded: a replayed or expired token is a security
+      // event that the operator has to be able to see.
+      await saveSecurityAudit(prisma, {
+        module: 'auth',
+        eventType: 'TOKEN_REFRESH_REJECTED',
+        action: 'TOKEN_REFRESH',
+        outcome: 'FAILURE',
+        context,
+        detail: { reason: result.message },
+      });
+      throw new RefreshTokenRejectedError(result.message, result.statusCode);
+    }
+    return result.tokens;
+  }
+
+  async logout(refreshToken?: string, context?: SecurityAuditContext): Promise<void> {
+    if (refreshToken) {
+      await authRepository.revokeRefreshToken(prisma, refreshToken);
+    }
+    // The logout is recorded, so the audit trail shows when a session ended.
+    await saveSecurityAudit(prisma, {
+      module: 'auth',
+      eventType: 'LOGOUT',
+      action: 'LOGOUT',
+      outcome: 'SUCCESS',
+      context,
+    });
+  }
+
+  async updateProfile(
+    userId: string,
+    firstName: string,
+    lastName: string,
+    email?: string | null,
+    telp?: string | null
+  ): Promise<UserSanitized> {
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const user = await authRepository.findUserByIdForUpdate(tx, userId);
+      if (!user) {
+        throw new HttpError('User not found', 404);
+      }
+
+      const updated = await authRepository.updateProfileAtomic(
+        tx,
+        userId,
+        firstName,
+        lastName,
+        user.version,
+        email,
+        telp
+      );
+      // Self-service profile edit: the authenticated user is the actor.
+      await saveUserHistory(tx, updated, user, selfActor(user), 'UPDATE');
+      return updated;
+    });
+    return sanitizeUser(updatedUser);
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserSanitized> {
+    return prisma.$transaction(async (tx) => {
+      const userPassword = await authRepository.findPasswordByUserIdForUpdate(tx, userId);
+      if (!userPassword) {
+        throw new HttpError('User password record not found', 404);
+      }
+
+      if (!await bcrypt.compare(oldPassword, userPassword.passwordHash)) {
+        throw new HttpError('Incorrect current password', 400);
+      }
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      await authRepository.updatePasswordAtomic(tx, userId, passwordHash, userPassword.version);
+      await authRepository.revokeAllUserRefreshTokens(tx, userId);
+      const user = await authRepository.findUserById(tx, userId);
+      if (!user) {
+        throw new HttpError('User not found', 404);
+      }
+      // Password hashes never enter history: only the redacted action is recorded.
+      await saveUserHistory(tx, user, user, selfActor(user), 'PASSWORD_CHANGE');
+      return sanitizeUser(user);
+    });
+  }
+
+  async getProfile(userId: string): Promise<UserSanitized> {
+    const user = await authRepository.findUserById(prisma, userId);
+    if (!user) {
+      throw new HttpError('User not found', 404);
+    }
+    return sanitizeUser(user);
+  }
+}
+
+export const authService = new AuthService();

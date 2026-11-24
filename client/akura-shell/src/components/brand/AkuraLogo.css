@@ -1,0 +1,24 @@
+.akura-logo {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: var(--akura-logo-height, 53px);
+  text-decoration: none;
+}
+
+.akura-logo img {
+  display: block;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+}
+
+.akura-logo-mark-only {
+  width: var(--akura-logo-height, 53px);
+}
+
+.akura-logo-mark-only img {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}

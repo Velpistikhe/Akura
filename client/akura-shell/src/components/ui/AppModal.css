@@ -1,0 +1,44 @@
+/* AppModal */
+.app-modal .ant-modal-content {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 16px rgba(15, 30, 61, 0.08), 0 32px 72px rgba(15, 30, 61, 0.2) !important;
+}
+
+.app-modal .ant-modal-header {
+  background: var(--surface-subtle, #f7f9fe) !important;
+  border-bottom: 1px solid rgba(26, 46, 94, 0.06) !important;
+  padding: 18px 24px !important;
+  margin-bottom: 0 !important;
+}
+
+.app-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary, #1b2b4e);
+}
+
+.app-modal .ant-modal-body {
+  padding: 24px !important;
+}
+
+.app-modal .ant-modal-footer {
+  padding: 16px 24px !important;
+  border-top: 1px solid rgba(26, 46, 94, 0.06) !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+.app-modal .ant-modal-close {
+  top: 16px !important;
+  right: 20px !important;
+  color: var(--text-muted, #8695b5) !important;
+  border-radius: 8px !important;
+}
+
+.app-modal .ant-modal-close:hover {
+  color: var(--text-primary, #1a2e5e) !important;
+  background: rgba(26, 46, 94, 0.06) !important;
+}

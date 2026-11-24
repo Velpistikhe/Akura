@@ -1,0 +1,42 @@
+.catalog-scopes { padding: 14px; margin-bottom: 22px; border: 1px solid var(--border, #e5eaf3); border-radius: 12px; background: var(--surface-subtle, #fafbfe); }
+.catalog-scopes-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.catalog-scope-row { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 8px; align-items: start; }
+.catalog-scope-row .ant-form-item { margin-bottom: 10px; }
+.catalog-service-name { display: block; white-space: normal; overflow-wrap: anywhere; }
+.catalog-scope-summary { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-maintenance-fields { margin-bottom: 22px; }
+.catalog-maintenance-panel { padding: 16px; border: 1px solid var(--border, #dfe6f2); border-radius: 12px; background: var(--surface-subtle, #f7f9fd); }
+.catalog-maintenance-scopes { margin-bottom: 0; background: var(--surface, #fff); }
+.catalog-detail { min-width: 0; }
+.catalog-detail-section { display: grid; gap: 16px; min-width: 0; }
+.catalog-detail-section h3 { margin: 0; }
+.catalog-detail-scopes-content { display: grid; min-width: 0; gap: 14px; }
+.catalog-detail-scope-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; }
+.catalog-detail-scope-form .ant-form-item { margin-bottom: 0; }
+.catalog-detail-scope-form .ant-form-item-control-input-content { min-width: 0; }
+.catalog-detail-scope-form .ant-input { width: 100%; }
+.catalog-detail-scopes { display: grid; min-width: 0; gap: 8px; }
+.catalog-detail-scope { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border, #e8ecf4); border-radius: 9px; background: var(--surface-subtle, #fafbfe); }
+.catalog-detail-scope-readonly { grid-template-columns: minmax(0, 1fr); }
+.catalog-detail-scope .ant-typography { min-width: 0; overflow-wrap: anywhere; }
+.catalog-maintenance-detail { display: grid; min-width: 0; gap: 14px; }
+.catalog-maintenance-detail > strong { color: var(--text-primary, #243454); font-size: 15px; }
+.catalog-maintenance-create { min-width: 0; }
+.catalog-maintenance-submit { margin-top: 6px; }
+.catalog-history { margin-top: 18px; min-width: 0; }
+.catalog-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.catalog-history-heading h3 { margin: 0; }
+.catalog-history-content { display: grid; grid-template-rows: 0fr; opacity: 0; transform: translateY(-6px); transition: grid-template-rows 240ms ease, opacity 180ms ease, transform 240ms ease; }
+.catalog-history-content.is-visible { grid-template-rows: 1fr; opacity: 1; transform: translateY(0); }
+.catalog-history-content-inner { min-height: 0; min-width: 0; overflow: hidden; }
+.catalog-history-list { display: grid; gap: 16px; margin-top: 16px; min-width: 0; }
+.catalog-history-table { min-width: 0; max-width: 100%; }
+.catalog-history-table .ant-table-cell { white-space: normal; overflow-wrap: anywhere; vertical-align: middle; }
+.catalog-history-table .ant-table-thead > tr > th { white-space: nowrap; }
+.catalog-history-table .ant-tag { max-width: 100%; margin-inline-end: 0; white-space: normal; overflow-wrap: anywhere; }
+.catalog-history-table .ant-pagination { flex-wrap: wrap; row-gap: 8px; }
+.catalog-history-detail { display: grid; gap: 20px; min-width: 0; }
+.catalog-history-detail .company-detail-grid { margin: 0; }
+.catalog-history-detail .ant-table-cell { overflow-wrap: anywhere; white-space: pre-wrap; }
+@media (prefers-reduced-motion: reduce) { .catalog-history-content { transition: none; } }
+@media (max-width: 560px) { .catalog-scopes-heading { align-items: stretch; flex-direction: column; } .catalog-detail-scope-form { grid-template-columns: 1fr; } }

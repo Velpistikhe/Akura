@@ -1,0 +1,128 @@
+{
+  "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CtZyBLFd.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CtZyBLFd.js",
+    "name": "_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__antd__loadShare__.js-DdZcCssw.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__antd__loadShare__.js-DdZcCssw.js",
+    "name": "_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__antd__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js",
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CtZyBLFd.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-Dk5vojlB.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-Dk5vojlB.js",
+    "name": "_virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "_dist-Bu41A7JA.js": {
+    "file": "assets/dist-Bu41A7JA.js",
+    "name": "dist",
+    "imports": [
+      "_vite-preload-helper-BlzjNyrA.js"
+    ]
+  },
+  "_rolldown-runtime-B0Z9INg1.js": {
+    "file": "assets/rolldown-runtime-B0Z9INg1.js",
+    "name": "rolldown-runtime"
+  },
+  "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_fieldservice__remoteEntry_js-BbpUjsUo.js": {
+    "file": "assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_fieldservice__remoteEntry_js-BbpUjsUo.js",
+    "name": "virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_fieldservice__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-BlzjNyrA.js",
+      "_dist-Bu41A7JA.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_fieldservice__mf_owner__1",
+      "virtual:mf-exposes:__mfe_internal__akura_fieldservice__remoteEntry_js"
+    ]
+  },
+  "_virtual_mf-exposes___mfe_internal__akura_fieldservice__remoteEntry_js-ByLwY39B.js": {
+    "file": "assets/virtual_mf-exposes___mfe_internal__akura_fieldservice__remoteEntry_js-ByLwY39B.js",
+    "name": "virtual_mf-exposes___mfe_internal__akura_fieldservice__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-BlzjNyrA.js"
+    ],
+    "dynamicImports": [
+      "src/FieldServiceApp.jsx"
+    ]
+  },
+  "_vite-preload-helper-BlzjNyrA.js": {
+    "file": "assets/vite-preload-helper-BlzjNyrA.js",
+    "name": "vite-preload-helper"
+  },
+  "index.html": {
+    "file": "assets/index-BWtJiTTc.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_fieldservice__remoteEntry_js-ByLwY39B.js",
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_fieldservice__remoteEntry_js-BbpUjsUo.js"
+    ]
+  },
+  "src/FieldServiceApp.jsx": {
+    "file": "assets/FieldServiceApp-etnsiXQx.js",
+    "name": "FieldServiceApp",
+    "src": "src/FieldServiceApp.jsx",
+    "isEntry": true,
+    "imports": [
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CtZyBLFd.js",
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__antd__loadShare__.js-DdZcCssw.js",
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-Dk5vojlB.js"
+    ],
+    "css": [
+      "assets/FieldServiceApp-Bi_DsB8Q.css"
+    ]
+  },
+  "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_fieldservice__remoteEntry_js": {
+    "file": "remoteEntry.js",
+    "name": "remoteEntry",
+    "src": "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_fieldservice__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_fieldservice__remoteEntry_js-BbpUjsUo.js"
+    ]
+  },
+  "virtual:mf-exposes:__mfe_internal__akura_fieldservice__remoteEntry_js": {
+    "file": "assets/virtualExposes-9GMT5yyJ.js",
+    "name": "virtualExposes",
+    "src": "virtual:mf-exposes:__mfe_internal__akura_fieldservice__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_fieldservice__remoteEntry_js-ByLwY39B.js"
+    ]
+  },
+  "virtual:mf-localSharedImportMap:__mfe_internal__akura_fieldservice__mf_owner__1": {
+    "file": "assets/_virtual_mf-localSharedImportMap___mfe_internal__akura_fieldservice__mf_owner__1-DtDqXqUH.js",
+    "name": "_virtual_mf-localSharedImportMap___mfe_internal__akura_fieldservice__mf_owner__1",
+    "src": "virtual:mf-localSharedImportMap:__mfe_internal__akura_fieldservice__mf_owner__1",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vite-preload-helper-BlzjNyrA.js",
+      "_dist-Bu41A7JA.js"
+    ],
+    "dynamicImports": [
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CtZyBLFd.js",
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-Dk5vojlB.js",
+      "__virtual_mf___mfe_internal__akura_fieldservice__mf_owner__1__loadShare__antd__loadShare__.js-DdZcCssw.js"
+    ]
+  },
+  "virtual:mf:__mfe_internal__akura_fieldservice__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js": {
+    "file": "assets/hostInit-CMlPUxNM.js",
+    "name": "hostInit",
+    "src": "virtual:mf:__mfe_internal__akura_fieldservice__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js",
+    "imports": [
+      "_vite-preload-helper-BlzjNyrA.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_fieldservice__remoteEntry_js",
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_fieldservice__mf_owner__1"
+    ]
+  }
+}

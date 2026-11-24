@@ -1,0 +1,128 @@
+{
+  "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-Asw10ong.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-Asw10ong.js",
+    "name": "_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__antd__loadShare__.js-rUxlbWRx.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__antd__loadShare__.js-rUxlbWRx.js",
+    "name": "_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__antd__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js",
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-Asw10ong.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-B8ZrN6nd.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-B8ZrN6nd.js",
+    "name": "_virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "_dist-CddsSFFK.js": {
+    "file": "assets/dist-CddsSFFK.js",
+    "name": "dist",
+    "imports": [
+      "_vite-preload-helper-D1p68vqi.js"
+    ]
+  },
+  "_rolldown-runtime-B0Z9INg1.js": {
+    "file": "assets/rolldown-runtime-B0Z9INg1.js",
+    "name": "rolldown-runtime"
+  },
+  "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_marketing__remoteEntry_js-GfEcE3Hb.js": {
+    "file": "assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_marketing__remoteEntry_js-GfEcE3Hb.js",
+    "name": "virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_marketing__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-D1p68vqi.js",
+      "_dist-CddsSFFK.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_marketing__mf_owner__1",
+      "virtual:mf-exposes:__mfe_internal__akura_marketing__remoteEntry_js"
+    ]
+  },
+  "_virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js-C4whtyL8.js": {
+    "file": "assets/virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js-C4whtyL8.js",
+    "name": "virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-D1p68vqi.js"
+    ],
+    "dynamicImports": [
+      "src/MarketingApp.jsx"
+    ]
+  },
+  "_vite-preload-helper-D1p68vqi.js": {
+    "file": "assets/vite-preload-helper-D1p68vqi.js",
+    "name": "vite-preload-helper"
+  },
+  "index.html": {
+    "file": "assets/index-iIQH8U7L.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js-C4whtyL8.js",
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_marketing__remoteEntry_js-GfEcE3Hb.js"
+    ]
+  },
+  "src/MarketingApp.jsx": {
+    "file": "assets/MarketingApp-COUo105J.js",
+    "name": "MarketingApp",
+    "src": "src/MarketingApp.jsx",
+    "isEntry": true,
+    "imports": [
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-Asw10ong.js",
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__antd__loadShare__.js-rUxlbWRx.js",
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-B8ZrN6nd.js"
+    ],
+    "css": [
+      "assets/MarketingApp-HY5jQeab.css"
+    ]
+  },
+  "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_marketing__remoteEntry_js": {
+    "file": "remoteEntry.js",
+    "name": "remoteEntry",
+    "src": "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_marketing__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_marketing__remoteEntry_js-GfEcE3Hb.js"
+    ]
+  },
+  "virtual:mf-exposes:__mfe_internal__akura_marketing__remoteEntry_js": {
+    "file": "assets/virtualExposes-COhjUTxd.js",
+    "name": "virtualExposes",
+    "src": "virtual:mf-exposes:__mfe_internal__akura_marketing__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_marketing__remoteEntry_js-C4whtyL8.js"
+    ]
+  },
+  "virtual:mf-localSharedImportMap:__mfe_internal__akura_marketing__mf_owner__1": {
+    "file": "assets/_virtual_mf-localSharedImportMap___mfe_internal__akura_marketing__mf_owner__1-CJJb-deF.js",
+    "name": "_virtual_mf-localSharedImportMap___mfe_internal__akura_marketing__mf_owner__1",
+    "src": "virtual:mf-localSharedImportMap:__mfe_internal__akura_marketing__mf_owner__1",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vite-preload-helper-D1p68vqi.js",
+      "_dist-CddsSFFK.js"
+    ],
+    "dynamicImports": [
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-Asw10ong.js",
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-B8ZrN6nd.js",
+      "__virtual_mf___mfe_internal__akura_marketing__mf_owner__1__loadShare__antd__loadShare__.js-rUxlbWRx.js"
+    ]
+  },
+  "virtual:mf:__mfe_internal__akura_marketing__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js": {
+    "file": "assets/hostInit-Br2rD6vA.js",
+    "name": "hostInit",
+    "src": "virtual:mf:__mfe_internal__akura_marketing__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js",
+    "imports": [
+      "_vite-preload-helper-D1p68vqi.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_marketing__remoteEntry_js",
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_marketing__mf_owner__1"
+    ]
+  }
+}

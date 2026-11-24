@@ -1,0 +1,1 @@
+import{t as e}from"./virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js-BkyZ_MjO.js";export{e as default};

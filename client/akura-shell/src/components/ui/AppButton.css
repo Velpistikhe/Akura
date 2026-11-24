@@ -1,0 +1,65 @@
+/* AppButton custom styles */
+.app-btn {
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Primary */
+.app-btn--primary.ant-btn-primary {
+  background: var(--gradient-primary, linear-gradient(135deg, #1a2e5e, #2a4080)) !important;
+  border: none !important;
+  color: var(--action-text) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.app-btn--primary.ant-btn-primary:not(:disabled):hover {
+  background: var(--gradient-primary-hover, linear-gradient(135deg, #0f1e3d, #1a2e5e)) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.app-btn--primary.ant-btn-primary:active {
+  transform: translateY(0) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Danger */
+.app-btn--danger.ant-btn-primary.ant-btn-dangerous {
+  background: var(--gradient-accent, linear-gradient(135deg, #e02020, #ff4444)) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(224, 32, 32, 0.3) !important;
+}
+.app-btn--danger.ant-btn-primary.ant-btn-dangerous:not(:disabled):hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 22px rgba(224, 32, 32, 0.38) !important;
+}
+.app-btn--danger.ant-btn-primary.ant-btn-dangerous:active {
+  transform: translateY(0) !important;
+}
+
+/* Outline */
+.app-btn--outline {
+  border: 1.5px solid var(--border, #e3e9f4) !important;
+  color: var(--text-primary, #1a2e5e) !important;
+  background: var(--surface, #ffffff) !important;
+}
+.app-btn--outline:not(:disabled):hover {
+  background: rgba(26, 46, 94, 0.05) !important;
+  border-color: var(--primary-lighter, #3d5a9e) !important;
+  color: var(--primary, #1a2e5e) !important;
+}
+
+/* XL size override */
+.app-btn--xl {
+  height: 52px !important;
+  padding: 0 36px !important;
+  font-size: 16px !important;
+}
+
+/* Disabled */
+.app-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}

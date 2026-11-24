@@ -1,0 +1,128 @@
+{
+  "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CQXyiq_u.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CQXyiq_u.js",
+    "name": "_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__antd__loadShare__.js-H_7oSfTu.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__antd__loadShare__.js-H_7oSfTu.js",
+    "name": "_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__antd__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js",
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CQXyiq_u.js"
+    ]
+  },
+  "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-b_pGlcj6.js": {
+    "file": "assets/_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-b_pGlcj6.js",
+    "name": "_virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js",
+    "imports": [
+      "_rolldown-runtime-B0Z9INg1.js"
+    ]
+  },
+  "_dist-D9jQZLIT.js": {
+    "file": "assets/dist-D9jQZLIT.js",
+    "name": "dist",
+    "imports": [
+      "_vite-preload-helper-DDKTBnWV.js"
+    ]
+  },
+  "_rolldown-runtime-B0Z9INg1.js": {
+    "file": "assets/rolldown-runtime-B0Z9INg1.js",
+    "name": "rolldown-runtime"
+  },
+  "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_finance__remoteEntry_js-DgoQfxHh.js": {
+    "file": "assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_finance__remoteEntry_js-DgoQfxHh.js",
+    "name": "virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_finance__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-DDKTBnWV.js",
+      "_dist-D9jQZLIT.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_finance__mf_owner__1",
+      "virtual:mf-exposes:__mfe_internal__akura_finance__remoteEntry_js"
+    ]
+  },
+  "_virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js-BkyZ_MjO.js": {
+    "file": "assets/virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js-BkyZ_MjO.js",
+    "name": "virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js",
+    "imports": [
+      "_vite-preload-helper-DDKTBnWV.js"
+    ],
+    "dynamicImports": [
+      "src/FinanceApp.jsx"
+    ]
+  },
+  "_vite-preload-helper-DDKTBnWV.js": {
+    "file": "assets/vite-preload-helper-DDKTBnWV.js",
+    "name": "vite-preload-helper"
+  },
+  "index.html": {
+    "file": "assets/index-C4-QcXp9.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js-BkyZ_MjO.js",
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_finance__remoteEntry_js-DgoQfxHh.js"
+    ]
+  },
+  "src/FinanceApp.jsx": {
+    "file": "assets/FinanceApp-C32pJwig.js",
+    "name": "FinanceApp",
+    "src": "src/FinanceApp.jsx",
+    "isEntry": true,
+    "imports": [
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CQXyiq_u.js",
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__antd__loadShare__.js-H_7oSfTu.js",
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-b_pGlcj6.js"
+    ],
+    "css": [
+      "assets/FinanceApp-TuV0nBfz.css"
+    ]
+  },
+  "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_finance__remoteEntry_js": {
+    "file": "remoteEntry.js",
+    "name": "remoteEntry",
+    "src": "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_finance__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-REMOTE_ENTRY_ID___mfe_internal__akura_finance__remoteEntry_js-DgoQfxHh.js"
+    ]
+  },
+  "virtual:mf-exposes:__mfe_internal__akura_finance__remoteEntry_js": {
+    "file": "assets/virtualExposes-BAFhjV6H.js",
+    "name": "virtualExposes",
+    "src": "virtual:mf-exposes:__mfe_internal__akura_finance__remoteEntry_js",
+    "imports": [
+      "_virtual_mf-exposes___mfe_internal__akura_finance__remoteEntry_js-BkyZ_MjO.js"
+    ]
+  },
+  "virtual:mf-localSharedImportMap:__mfe_internal__akura_finance__mf_owner__1": {
+    "file": "assets/_virtual_mf-localSharedImportMap___mfe_internal__akura_finance__mf_owner__1-C-J8HbZB.js",
+    "name": "_virtual_mf-localSharedImportMap___mfe_internal__akura_finance__mf_owner__1",
+    "src": "virtual:mf-localSharedImportMap:__mfe_internal__akura_finance__mf_owner__1",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vite-preload-helper-DDKTBnWV.js",
+      "_dist-D9jQZLIT.js"
+    ],
+    "dynamicImports": [
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare___mf_0_ant_mf_2_design_mf_1_icons__loadShare__.js-CQXyiq_u.js",
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__react_mf_1_jsx_mf_2_runtime__loadShare__.js-b_pGlcj6.js",
+      "__virtual_mf___mfe_internal__akura_finance__mf_owner__1__loadShare__antd__loadShare__.js-H_7oSfTu.js"
+    ]
+  },
+  "virtual:mf:__mfe_internal__akura_finance__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js": {
+    "file": "assets/hostInit-B5fjReY_.js",
+    "name": "hostInit",
+    "src": "virtual:mf:__mfe_internal__akura_finance__mf_owner__1__H_A_I__hostAutoInit__H_A_I__.js",
+    "imports": [
+      "_vite-preload-helper-DDKTBnWV.js"
+    ],
+    "dynamicImports": [
+      "virtual:mf-REMOTE_ENTRY_ID:__mfe_internal__akura_finance__remoteEntry_js",
+      "virtual:mf-localSharedImportMap:__mfe_internal__akura_finance__mf_owner__1"
+    ]
+  }
+}
